@@ -1,0 +1,6 @@
+Maybe Make Database Only Store Users and Their Roles Instead Of Entire Owner Guild
+
+For Stats embed error add two reactions and have it say "react with check if you would like to make this the new stats embed"
+
+XX Better Logs
+
