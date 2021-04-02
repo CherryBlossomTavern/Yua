@@ -7,7 +7,7 @@ import {
 
 interface ownerGuild extends Document {
   dummyID: 1
-  guild: JSON
+  guild: import('../../@types').SimpleErisGuildJSON
   lastUpdated: number
 }
 

@@ -42,7 +42,5 @@ export const debug = (...content: any[]): void => {
 }
 
 export const custom = (header: string, color: "black" | "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "white" | "gray", ...content: any[]): void => {
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`${chalk.gray(moment().format("YYYY-MM-DD HH:mm:ss"))} ${chalk[color](`[${header}]`)}`, ...content)
-  }
+  console.log(`${chalk.gray(moment().format("YYYY-MM-DD HH:mm:ss"))} ${chalk[color](`[${header}]`)}`, ...content)
 }

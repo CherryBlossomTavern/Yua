@@ -11,14 +11,11 @@ for (const prefix of prefixes) {
 prefixesRegexpString = `(${prefixesRegexpString.slice(1)})`
 
 export const colors = {
-  default: "#ffedad",
-  error: "#ffadad",
-  success: "#b0fdad",
-  info: "#b0d3ff",
+  default:0xffedad, // #ffedad
+  error:0xffadad, // #ffadad
+  success:0xb0fdad, // #b0fdad
+  info:0xb0d3ff, // #b0d3ff
 }
-
-export const commands = new Map()
-export const commandsArray = []
 
 export const responsePatterns = {
   

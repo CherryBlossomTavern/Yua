@@ -1,2 +1,5 @@
 export * from './Discord'
 export * from './YuaConfig'
+export * from './Eris'
+export * from './Command'
+export * from './Extra'

@@ -23,8 +23,8 @@ export class YuaStats {
   constructor(Yua: import('../client')) {
     this.Yua = Yua
     this.Yua.ipc.register('stats', (message) => {
-      if (this.Yua.config.statsEnabled && this.Yua.config.statsChannelID) {
-        this.sendStats(message.msg, this.Yua.config.statsChannelID, this.Yua.config.statsMessageID)
+      if (this.Yua.yuaConfig.statsEnabled && this.Yua.yuaConfig.statsChannelID) {
+        this.sendStats(message.msg, this.Yua.yuaConfig.statsChannelID, this.Yua.yuaConfig.statsMessageID)
       }
     })
   }

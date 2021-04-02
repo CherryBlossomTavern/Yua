@@ -22,10 +22,10 @@ import { Manager } from 'yuasharder'
 (async function(): Promise<void> {
   (await import('./database')).default
 
-  const manager = new Manager(process.env.TOKEN, '/dist/client.js', {
+  const manager = new Manager(process.env.TOKEN, process.env.NODE_ENV === 'production' ? '/dist/client.js' : '/src/client.ts', {
     statsInterval: parseInt(process.env.STATS_INTERVAL) || 15000,
     totalShards: parseInt(process.env.TOTAL_SHARDS) || 1,
-    totalClusters: parseInt(process.env.TOTAL_CLUSTERS) || 1,
+    totalClusters: parseInt(process.env.TOTAL_CLUSTERS) || null,
     clientOptions: {
       getAllUsers: process.env.FETCH_ALL_MEMBERS === 'true' ? true : false,
     },
