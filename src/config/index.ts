@@ -1,7 +1,7 @@
 export const prefixes = [
   "yua",
   "y!",
-  "{{MENTION}}",
+  "<YUA_BOT_MENTION>",
 ]
 
 export let prefixesRegexpString = ""
@@ -9,6 +9,8 @@ for (const prefix of prefixes) {
   prefixesRegexpString += `|^${prefix}(\\s+|)`
 }
 prefixesRegexpString = `(${prefixesRegexpString.slice(1)})`
+
+export const prefixRegEXP = new RegExp(prefixesRegexpString)
 
 export const colors = {
   default:0xffedad, // #ffedad

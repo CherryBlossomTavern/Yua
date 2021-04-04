@@ -2,6 +2,7 @@ import {
   CommandExtra,
   CommandProps,
 } from '../../@types'
+
 export abstract class BaseCommand {
   private _name: string
   private _extra: CommandExtra

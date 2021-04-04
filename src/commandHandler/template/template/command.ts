@@ -1,8 +1,10 @@
 import { BaseCommand } from '../../'
 import { CommandProps } from '../../../@types'
+import Yua from '../../../client'
+
 class YuaCommand extends BaseCommand {
-  private yua: import('../../../client')
-  constructor(yua: import('../../../client')) {
+  private yua: Yua
+  constructor(yua: Yua) {
     super("commandName", {
       usage: "",
       description: "",
@@ -19,4 +21,4 @@ class YuaCommand extends BaseCommand {
   }
 }
 
-export default YuaCommand
+export = YuaCommand

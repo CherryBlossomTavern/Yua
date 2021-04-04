@@ -1,5 +1,5 @@
 - Because of the way yuasharder is made index.ts and client.ts in src/ are required to be object oriented, the rest of the bot will _NOT_ be object oriented
   Actual code for yua needs to go in yua.ts please leave client.ts and index.ts alone
 
-- Anything in the config with {{TEXT}} is replaced with a value somewhere else in the code
+- Anything in the config with %TEXT% is replaced with a value somewhere else in the code
   It was chosen to do it this way as it is the same as vue

@@ -44,7 +44,7 @@ import { Manager } from 'yuasharder'
       console.custom("CLUSTER_WARN", 'yellow', `{${clusterWarn.clusterID}}`, `[${clusterWarn.shards[0]}, ${clusterWarn.shards[1]}]`, "::", clusterWarn.message)
     })
     .on('clusterError', (clusterError) => {
-      console.custom("CLUSTER_ERROR", 'red', `{${clusterError.clusterID}}`, `[${clusterError.shards[0]}, ${clusterError.shards[1]}]`, "::", clusterError.message)
+      console.custom("CLUSTER_ERROR", 'red', `{${clusterError.clusterID}}`, `[${clusterError.shards[0]}, ${clusterError.shards[1]}]`, "::", clusterError.message, `${clusterError.error.name}\n${clusterError.error.message}\n${clusterError.error.stack}`)
     })
     .on('shardConnect', (shard) => {
       console.custom("SHARD_CONNECT", 'green', `{${shard.clusterID}}`, `(${shard.shard})`, `[${shard.shards[0]}, ${shard.shards[1]}]`, "::", shard.message)

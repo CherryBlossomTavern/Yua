@@ -1,10 +1,12 @@
 import { BaseCommand } from '../../'
 import { CommandProps } from '../../../@types'
 import { colors } from '../../../config'
+import Yua from '../../../client'
 import mongoose from 'mongoose'
+
 class YuaCommand extends BaseCommand {
-  private yua: import('../../../client')
-  constructor(yua: import('../../../client')) {
+  private yua: Yua
+  constructor(yua: Yua) {
     super("ping", {
       usage: "",
       description: "Ping my database, and connections with Discord to return live latency stats!",
@@ -19,12 +21,11 @@ class YuaCommand extends BaseCommand {
     const {
       message,
     } = props
-    
+
     const clusterID = this.yua.clusterID
     const shardID = this.yua.client.guildShardMap[message.guildID]
     const shard = this.yua.client.shards.get(shardID)
     const wsLatency = shard.latency
-    const lastHeartBeatReceived = shard.lastHeartbeatReceived
     const lastHeartBeatSent = shard.lastHeartbeatSent
     const status = shard.status
     const databasePing = await this.getDatabasePing()
@@ -54,19 +55,13 @@ class YuaCommand extends BaseCommand {
 Cluster ID: ${clusterID}
 Shard ID: ${shardID}
 Status: "${status}"
-
-------- Shard -------
-
-Last Heartbeat Recieved: ${new Date(lastHeartBeatReceived).toLocaleTimeString()}
-Last Heartbeat Sent: ${new Date(lastHeartBeatSent).toLocaleTimeString()}
+Last Heartbeat: ${new Date(lastHeartBeatSent).toLocaleTimeString()}
 
 ------ Latency ------
 
-Websocket: ${wsLatency}ms
-Database:  ${databasePing}ws
-API:  ${m.editedTimestamp - m.timestamp}ws
-
----------------------
+Websocket:  ${wsLatency}ms
+Database:   ${databasePing}ms
+API:        ${mEdited.editedTimestamp - m.createdAt - 100}ms
 \`\`\``,
                 },
               })
@@ -82,4 +77,4 @@ API:  ${m.editedTimestamp - m.timestamp}ws
   }
 }
 
-export default YuaCommand
+export = YuaCommand

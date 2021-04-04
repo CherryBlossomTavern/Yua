@@ -22,7 +22,7 @@ import {
 
 import * as console from './logs'
 import { default as yua } from './yua'
-import { CommandHandler } from './commands'
+import { CommandHandler } from './commandHandler'
 
 class Yua extends Base {
   public readonly statsCluster: number = parseInt(process.env.STATS_CLUSTER)
@@ -59,7 +59,7 @@ class Yua extends Base {
    */
   public async init(): Promise<void> {
     if (!this._started) {
-      console.custom('YUA', 'magenta', `Logged in as ${this.client.user.username}#${this.client.user.discriminator}`)
+      console.custom('YUA_LOG', 'magenta', `Logged in as ${this.client.user.username}#${this.client.user.discriminator}`)
 
       this.getConfig().then((res) => {
         this._config = res
@@ -86,12 +86,23 @@ class Yua extends Base {
   public startYua(): void {
     if (!this._started) {
       this._started = true
+      
       if (this.ownerGuild) {
         console.custom('YUA_DEBUG', 'gray', "Owner Guild Recieved:", this.ownerGuild.id)
       } else {
         console.custom('YUA_WARN', 'yellow', "Yua started but no owner guild, most likely probability: fetchOwnerGuild disabled or no owner guild ID")
       }
-      yua(this)
+
+      console.log('Attempting Command Register')
+      this._CommandHandler = new CommandHandler(this)
+      this._CommandHandler.autoRegisterAll().then((res) => {
+        if (!res) {
+          throw new Error("Command Register Failed")
+        } else {
+          console.success(`Commands Registered`)
+          yua(this)
+        }
+      })
     }
   }
 

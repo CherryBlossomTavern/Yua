@@ -9,22 +9,23 @@ import {
   AxiosResponse,
   default as axios,
 } from 'axios'
+
 import { colors } from '../config'
 import { YuaConfig } from '../database/models'
 
 const backupEmbed: DiscordEmbed = {
   title: "Stats Embed Error",
   description: "Discord responded with a failure code when trying to update stats message!\n\`\`\`Stats has been disabled automatically, please redo stats message setup or config a new message id and re-enable\`\`\`",
-  color: parseInt(colors.error.replace("#", "0x")),
+  color: colors.error,
 }
 
 export class YuaStats {
-  public Yua: import('../client')
+  private Yua: import('../client')
   constructor(Yua: import('../client')) {
     this.Yua = Yua
     this.Yua.ipc.register('stats', (message) => {
-      if (this.Yua.yuaConfig.statsEnabled && this.Yua.yuaConfig.statsChannelID) {
-        this.sendStats(message.msg, this.Yua.yuaConfig.statsChannelID, this.Yua.yuaConfig.statsMessageID)
+      if (this.Yua.config.statsEnabled && this.Yua.config.statsChannelID) {
+        this.sendStats(message.msg, this.Yua.config.statsChannelID, this.Yua.config.statsMessageID)
       }
     })
   }
@@ -47,7 +48,7 @@ export class YuaStats {
     stats.ram = stats.ram / 1000000
 
     const embed: DiscordEmbed = {
-      color: parseInt(colors.default.replace("#", "0x")),
+      color: colors.default,
       title: "My Live Stats <3",
       description: `\`\`\`Total Guilds: ${stats.guilds}\nTotal Users: ${stats.users}\nTotal Ram: ${Math.round(stats.ram)}mb\nTotal Clusters: ${stats.clusters.length}\`\`\``,
       thumbnail: {
