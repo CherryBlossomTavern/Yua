@@ -19,6 +19,18 @@ export const colors = {
   info:0xb0d3ff, // #b0d3ff
 }
 
-export const responsePatterns = {
-  
+export const categoryHelp: { [category: string]: { text: string, emoji: string } } = {
+  roleplay: {
+    text: "Many commands to fit any of your chat roleplay desires",
+    emoji: ":hugging:",
+  },
+  utility: {
+    text: "Left over commands that did not fit anywhere that may prove useful",
+    emoji: ":flashlight:",
+  },
 }
+
+export const defaultDevs: string[] = [
+  "232597078650519553",
+  "316669053957832706",
+]

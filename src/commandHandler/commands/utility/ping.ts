@@ -9,7 +9,7 @@ class YuaCommand extends BaseCommand {
   constructor(yua: Yua) {
     super("ping", {
       usage: "",
-      description: "Ping my database, and connections with Discord to return live latency stats!",
+      description: "Ping my database and connections with Discord to return live latency stats!",
       category: "utility",
       aliases: ["pong"],
       permissions: [], // Not Yet Implemented

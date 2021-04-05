@@ -5,4 +5,5 @@ export interface YuaConfigInterface {
   statsMessageID: string
   roleplaySheetID: string
   donoRoles: Record<string, number>
+  devs: string[]
 }

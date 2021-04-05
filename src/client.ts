@@ -134,17 +134,12 @@ class Yua extends Base {
     return new Promise((resolve) => {
       YuaConfig.findOne({ dummyID: 1 }).then((res) => {
         if (!res) {
-          YuaConfig.create({
-            ownerGuildFaultPeriod: null,
-            statsEnabled: false,
-            statsChannelID: null,
-            statsMessageID: null,
-            roleplaySheetID: null,
-            donoRoles: {},
-            dummyID: 1,
-          }).then((res) => {
-            resolve(res)
-          })
+          YuaConfig.create({})
+            .then(() => {
+              this.getConfig().then(res => {
+                resolve(res)
+              })
+            })
         } else {
           resolve(res)
         }

@@ -27,6 +27,10 @@ interface RPCommand {
   links: string[]
 }
 
+interface RpCommandClass extends BaseCommand {
+  links?: string[]
+}
+
 class CommandHandler {
   private yua: Yua
   private _commands: Map<string, BaseCommand> = new Map()
@@ -35,6 +39,9 @@ class CommandHandler {
   }
   get commandsArray(): BaseCommand[] {
     return Array.from(this._commands.values())
+  }
+  get categories(): string[] {
+    return [...new Set(this.commandsArray.map(c => c.extra.category))].sort()
   }
   public add(command: BaseCommand): void {
     if (!this._commands.get(command.name)) {
@@ -124,6 +131,7 @@ class CommandHandler {
             new (
               class YuaRoleplayCommand extends BaseCommand {
                 private yua: Yua
+                public links: string[] = links
                 constructor(yua: Yua) {
                   super(name, {
                     usage: type === 3 ? "[user] [reason]" : (type === 2 ? "<user> [reason]" : "[reason]"),
@@ -165,7 +173,7 @@ class CommandHandler {
     const self = (): void => {
       try {
         const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
-
+        //console.log(gif)
         let response = rpCommand.response
 
         if (rpCommand.type === 3) {
@@ -192,7 +200,18 @@ class CommandHandler {
     const towards = async (): Promise<void> => {
       try {
         if (!args[0]) {
-          quickEmbed(null, `**Sorry!** I need you to tell me who you want to ${rpCommand.name} first!`)
+          //quickEmbed(null, `**Sorry!** I need you to tell me who you want to ${rpCommand.name} first!`)
+          const sadCmd: RpCommandClass = yua.commandHandler.get("sad")
+
+          const gif = sadCmd.links[Math.floor(Math.random() * sadCmd.links.length)]
+
+          embed({
+            color: colors.default,
+            description: `**${message.member.nick || message.member.username}** wants a ${rpCommand.name}`,
+            image: {
+              url: gif,
+            },
+          })
 
           return
         }
@@ -200,8 +219,29 @@ class CommandHandler {
         if (!user) throw "No User"
         args.shift()
 
-        const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
+        if (message.member.id === user.id) {
+          if (rpCommand.type === 3) {
+            self()
 
+            return
+          }
+          const sadCmd: RpCommandClass = yua.commandHandler.get("sad")
+
+          const gif = sadCmd.links[Math.floor(Math.random() * sadCmd.links.length)]
+
+          embed({
+            color: colors.default,
+            description: `**${message.member.nick || message.member.username}** wants a ${rpCommand.name}`,
+            image: {
+              url: gif,
+            },
+          })
+
+          return
+        }
+
+        const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
+        //console.log(gif)
         let response = rpCommand.response
 
         if (rpCommand.type === 3) {
@@ -231,6 +271,7 @@ class CommandHandler {
     }
     const getUser = async (): Promise<Member> => {
       try {
+        if (!args[0]) return null
         const guild = yua.client.guilds.get(props.message.guildID)
         const user =
           guild.members.get(message.mentions[0]?.id) ||

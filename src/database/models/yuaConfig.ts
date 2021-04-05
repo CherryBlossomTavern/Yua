@@ -4,6 +4,10 @@ import {
   Model,
   Document,
 } from 'mongoose'
+import {
+  defaultDevs,
+} from '../../config'
+
 
 interface yuaConfig extends Document {
   dummyID: 1
@@ -13,16 +17,42 @@ interface yuaConfig extends Document {
   statsMessageID: string
   roleplaySheetID: string
   donoRoles: Record<string, number>
+  devs: string[]
 }
 
 const schema: Schema = new Schema({
-  dummyID: Number, // Acts as a quick way to find and update the document, will always be 1
-  ownerGuildFaultPeriod: Number,
-  statsEnabled: Boolean,
-  statsChannelID: String,
-  statsMessageID: String,
-  roleplaySheetID: String,
-  donoRoles: Object,
+  dummyID: {
+    type: Number,
+    default: 1,
+  }, // Acts as a quick way to find and update the document, will always be 1
+  ownerGuildFaultPeriod: {
+    type: Number,
+    default: null,
+  },
+  statsEnabled: {
+    type: Boolean,
+    default: false,
+  },
+  statsChannelID: {
+    type: String,
+    default: null,
+  },
+  statsMessageID: {
+    type: String,
+    default: null,
+  },
+  roleplaySheetID: {
+    type: String,
+    default: null,
+  },
+  donoRoles: {
+    type: Object,
+    default: null,
+  },
+  devs: {
+    type: Array,
+    default: defaultDevs,
+  },
 }, { versionKey: false })
 
 const schemaModel: Model<yuaConfig> = model('yua-config', schema, 'yua-config')
