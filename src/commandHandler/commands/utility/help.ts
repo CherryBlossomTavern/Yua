@@ -19,13 +19,12 @@ class YuaCommand extends BaseCommand {
         "commands",
         "yuafordummies",
       ],
-      permissions: [], // Not Yet Implemented
-      type: 'all', // Not Yet Implemented
     })
     this.yua = yua
   }
   public execute(props: CommandProps): void {
     const {
+      message,
       args,
       embed,
       quickEmbed,
@@ -48,6 +47,7 @@ class YuaCommand extends BaseCommand {
       const commands = this.yua.commandHandler.commandsArray
   
       for (const cat of this.yua.commandHandler.categories) {
+        if (cat === "developer") continue
         helpEmbed.fields.push({
           name: `${categoryHelp[cat].emoji} ${cat.toLowerCase().charAt(0)
             .toUpperCase() + cat.toLowerCase().slice(1)} (${commands.filter(cmd => cmd.extra.category === cat).length})`,
@@ -55,9 +55,16 @@ class YuaCommand extends BaseCommand {
           inline: true,
         })
       }
+      if (this.yua.config.devs.includes(message.author.id)) {
+        helpEmbed.fields.push({
+          name: `:gear: Developer (${commands.filter(cmd => cmd.extra.category === 'developer').length})`,
+          value: `*Special commands my maintainers can use to debug/fix possible issues*`,
+          inline: true,
+        })
+      }
       helpEmbed.fields.push({
         name: "Extra Links and Information",
-        value: `[Invite](https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua) | [Website]() | [Support](https://discord.gg/yua) | [Vote]() | [Patreon](https://www.patreon.com/yuabot) | [Premium]()`,
+        value: `[Invite](https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua) | [Website]() | [Support](https://discord.gg/yua) | [Vote]() | [Patreon](https://www.patreon.com/yuabot)`,
         inline: false,
       })
       embed(helpEmbed)
@@ -65,7 +72,8 @@ class YuaCommand extends BaseCommand {
       return
     } else {
       const categories = this.yua.commandHandler.categories
-      if (categories.includes(args[0].toLowerCase())) {
+      const evalUser = args[0].toLowerCase() !== 'developer' ? true : this.yua.config.devs.includes(message.author.id) ? true : false
+      if (categories.includes(args[0].toLowerCase()) && evalUser) {
         const commands = Array.from(this.yua.commandHandler.filter(cmd => cmd.extra.category === args[0].toLowerCase()).values())
           .sort(this.sort)
         const uppercaseCat = args[0]
@@ -112,9 +120,14 @@ class YuaCommand extends BaseCommand {
         embed(catEmbed)
 
         return
-      } else  {
+      } else {
         const command = this.yua.commandHandler.getByAlias(args[0].toLowerCase())
         if (command) {
+          if (command.extra.category === 'developer' && !this.yua.config.devs.includes(message.author.id)) {
+            quickEmbed(null, `I could not find the command, category, or alias **"${args[0]}"**`, colors.error)
+
+            return
+          }
           const uppercaseCat = command.extra.category
             .toLowerCase()
             .charAt(0)

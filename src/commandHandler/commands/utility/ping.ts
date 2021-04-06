@@ -8,12 +8,9 @@ class YuaCommand extends BaseCommand {
   private yua: Yua
   constructor(yua: Yua) {
     super("ping", {
-      usage: "",
       description: "Ping my database and connections with Discord to return live latency stats!",
       category: "utility",
       aliases: ["pong"],
-      permissions: [], // Not Yet Implemented
-      type: 'all', // Not Yet Implemented
     })
     this.yua = yua
   }

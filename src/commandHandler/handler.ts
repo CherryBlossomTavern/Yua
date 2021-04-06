@@ -318,6 +318,7 @@ class CommandHandler {
     let { content } = message
 
     if (author.bot) return
+    if (message.channel.type === 1) return
 
     content = content.replace(/<YUA_BOT_MENTION>/, "") // Probability of this happenening is small but probably should just in case
     const args = content.split(" ")
@@ -360,6 +361,30 @@ class CommandHandler {
         color: color || colors.default,
       })
     }
+
+    if (command.extra.devOnly && !this.yua.config.devs.includes(message.author.id)) {
+      quickEmbed(null, "Apologies, but only my maintainers can utilize this!", colors.error)
+
+      return
+    }
+
+    if (command.extra.permissions) {
+      let hasPerms = true
+      let missingPerm = undefined
+      for (const perm of command.extra.permissions) {
+        if (!message.member.permissions.has(perm)) {
+          hasPerms = false
+          missingPerm = perm
+          break
+        }
+      }
+      if (!hasPerms) {
+        quickEmbed(null, `Sorry, it seems you don't have **${missingPerm}** permission, I cannot let you do that!`, colors.error)
+
+        return
+      }
+    }
+
 
     try {
       const props: CommandProps = {
