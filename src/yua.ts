@@ -7,6 +7,6 @@ export default (yua: import('./client')): void => {
 
   yua.client.on('messageCreate', messageCreate(yua))
   
-  // New Code Written
+  // I write new code done for night gonna push
 
 }
