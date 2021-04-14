@@ -53,5 +53,20 @@ git clone https://github.com/CherryBlossomTavern/Yua
 
 ## Versioning
 
+`package.json` utilizes [semantic versioning](https://semver.org/) thus we follow this format when updating Yua.
+> When creating a pull request be sure to bump the version in package.json accordingly
+
+![Semantic Versioning Example](https://user-images.githubusercontent.com/61068742/114731685-8fedf280-9d07-11eb-9977-9d844e7c8efc.png)
+
+#### `A [Major Change]`
+This will/needs to be bumped up whenever there is a major change. What would classify as a major change is something that "breaks the API" or rather in Yua's case something that is heavily changing her functionality or layout.
+#### `B [Minor Change]`
+This will/needs to be bumped whenever there is a minor change. What classifies as a minor change would be something like adding or removing features from the current major version. In Yua's case, this may be something along the lines of adding/removing commands, etc.
+#### `C [Bug Fix]`
+This will/needs to be bumped whenever there is a bug fix. This will be the most commonly bumped value. What would classify a bug fix is changes to any minor features. In Yua's case, tweaking a command, etc.
+
+#### `A.B.C`
+In conclusion, `A` will be bumped whenever there is a new version that is significantly different from or breaks the last version. `B` will be bumped when there are any changes/tweaks to the current version `A`. `C` will be bumped when there are any changes/tweaks made to the current `B` version of `A`
+
 ## License
 Forgot to add this whoops...
