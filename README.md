@@ -72,7 +72,7 @@ In conclusion, `A` will be bumped whenever there is a new version that is signif
 Means Yua is on her 1st major version, 5th minor version, and 24 bug fixes to the current minor version 
 
 #### Notes
-Whenever a version is bumped all versions following it will reset to 0
+Whenever a version is bumped all versions following it will reset to 0.
 For example if Yua's current version is `1.5.24` and we make a minor change the version will become `1.6.0` __**not**__ `1.6.24`
 
 ## License
