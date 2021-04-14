@@ -68,7 +68,7 @@ This will/needs to be bumped whenever there is a bug fix. This will be the most 
 #### `A.B.C`
 In conclusion, `A` will be bumped whenever there is a new version that is significantly different from or breaks the last version. `B` will be bumped when there are any changes/tweaks to the current version `A`. `C` will be bumped when there are any changes/tweaks made to the current `B` version of `A`
 
-#### EX: `1.5.24`
+##### EX: `1.5.24`
 Means Yua is on her 1st major version, 5th minor version, and 24 bug fixes to the current minor version 
 
 #### Notes
