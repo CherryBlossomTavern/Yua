@@ -68,5 +68,12 @@ This will/needs to be bumped whenever there is a bug fix. This will be the most 
 #### `A.B.C`
 In conclusion, `A` will be bumped whenever there is a new version that is significantly different from or breaks the last version. `B` will be bumped when there are any changes/tweaks to the current version `A`. `C` will be bumped when there are any changes/tweaks made to the current `B` version of `A`
 
+#### EX: `1.5.24`
+Means Yua is on her 1st major version, 5th minor version, and 24 bug fixes to the current minor version 
+
+#### Notes
+Whenever a version is bumped all versions following is will reset to 0
+For example if Yua's current version is `1.5.24` and we make a minor change the version will become `1.6.0` __**not**__ `1.6.24`
+
 ## License
 Forgot to add this whoops...
