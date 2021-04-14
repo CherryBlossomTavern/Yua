@@ -33,7 +33,9 @@
   "dependencies": {
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
+    "dotlang": "^1.0.0",
     "eris": "^0.14.1",
+    "git-clone": "^0.1.0",
     "moment": "^2.29.1",
     "mongoose": "^5.12.3",
     "yuasharder": "^1.0.9"
