@@ -1,0 +1,6 @@
+[submodule "submodules/Yua-Translations"]
+	path = submodules/Yua-Translations
+	url = https://github.com/CherryBlossomTavern/Yua-Translations.git
+[submodule "submodules/Yua-Roleplay"]
+	path = submodules/Yua-Roleplay
+	url = https://github.com/CherryBlossomTavern/Yua-Roleplay.git
