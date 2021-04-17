@@ -1,0 +1,6 @@
+[submodule "src/resources/Yua-Roleplay"]
+	path = src/resources/Yua-Roleplay
+	url = https://github.com/CherryBlossomTavern/Yua-Roleplay
+[submodule "src/resources/Yua-Translations"]
+	path = src/resources/Yua-Translations
+	url = https://github.com/CherryBlossomTavern/Yua-Translations
