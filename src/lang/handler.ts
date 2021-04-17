@@ -1,5 +1,5 @@
 import Yua from 'src/client'
-import { parseAllInDir } from 'dotlang'
+//import { parse } from 'dotlang'
 import path from 'path'
 // Do dis l8tr
 class LangHandler {
@@ -57,8 +57,9 @@ class LangHandler {
     return this._all.get(this._config.default).get(key)
   }
   public parseAllLang(): void {
-    const langs = parseAllInDir(path.resolve(__dirname, '../../partials/Yua-Translations/lang'))
-    this._all = langs
+    // const langs = parse(path.resolve(__dirname, '../../partials/Yua-Translations/lang/en_US.lang'))
+    // this._all = new Map()
+    // this._all.set('en_US', langs)
   }
 }
 
