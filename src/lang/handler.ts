@@ -70,7 +70,9 @@ class LangHandler {
 
 function parse(path: string): Map<string, string> {
   const fullPath = resolve(path)
+  console.log(fullPath)
   if (!path.endsWith('.lang') || !fs.existsSync(fullPath)) throw new Error(`Invalid file path: "${path}"`)
+  console.log("parsing file")
   const langFile = fs.readFileSync(fullPath).toString()
   const cleanLangFile = langFile.split("\r\n").filter(item => item.length > 0)
     .filter(item => !item.replace(/\s+/, "").startsWith('#'))
@@ -80,6 +82,7 @@ function parse(path: string): Map<string, string> {
     const keyValue = item.split(/=/)
     langMap.set(keyValue[0].trim(), keyValue[1].trim())
   }
+  console.log(langMap)
 
   return langMap
 }
