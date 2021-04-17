@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import Eris, {
+import {
   Member,
   Message,
   EmbedOptions,
