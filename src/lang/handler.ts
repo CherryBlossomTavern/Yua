@@ -9,10 +9,10 @@ class LangHandler {
   private _config: { langs: string[], default: string }
   constructor(yua: Yua) {
     this.yua = yua
-    this.parseAllLang()
     import(resolve(__dirname, "../../partials/Yua-Translations/config.json")).then(r => {
       this._config = r.default
       console.log(this.config)
+      this.parseAllLang()
     })
   }
   get all(): Map<string, Map<string, string>> {
@@ -61,6 +61,7 @@ class LangHandler {
   public parseAllLang(): void {
     const langs = parseAllInDir(resolve(__dirname, '../../partials/Yua-Translations/lang'))
     this._all = langs
+    console.log(this._all.get(this._config.default))
   }
 }
 
