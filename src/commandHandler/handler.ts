@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {
+import Eris, {
   Member,
   Message,
   EmbedOptions,
@@ -248,8 +248,11 @@ class CommandHandler {
       try {
         if (!args[0]) return null
         const guild = yua.client.guilds.get(props.message.guildID)
-        const user =
-          guild.members.get(message.mentions[0]?.id) ||
+        let user: Eris.Member
+        if (message.mentions[0]) {
+          user = guild.members.get(message.mentions[0].id)
+        } else {
+          user =
           guild.members.get(args[0]) ||
           guild.members.find(({ username }) => username === args[0]) ||
           (await guild.fetchMembers({
@@ -259,6 +262,7 @@ class CommandHandler {
           (await guild.fetchMembers({
             userIDs: [args[0]],
           }))[0]
+        }
         if (!user) {
           return null
         } else {
