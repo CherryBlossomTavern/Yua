@@ -9,11 +9,6 @@ class LangHandler {
   private _config: { langs: string[], default: string }
   constructor(yua: Yua) {
     this.yua = yua
-    import(resolve(__dirname, "../../partials/Yua-Translations/config.json")).then(r => {
-      this._config = r.default
-      console.log(this.config)
-      this.parseAllLang()
-    })
   }
   get all(): Map<string, Map<string, string>> {
     return this._all
@@ -55,13 +50,21 @@ class LangHandler {
     null
   }
   public tempGetValue(key: string): string {
-    return null
-    //this._all.get(this._config.default).get(key)
+    return this._all.get(this._config.default).get(key)
   }
-  public parseAllLang(): void {
-    const langs = parseAllInDir(resolve(__dirname, '../../partials/Yua-Translations/lang'))
-    this._all = langs
-    console.log(this._all.get(this._config.default))
+  public parseAllLang(): Promise<boolean> {
+    return new Promise((resolveEnd) => {
+      import(resolve(__dirname, "../../partials/Yua-Translations/config.json")).then(r => {
+        this._config = r.default
+        console.log(this.config)
+        for (const lang of this._config.langs) {
+          const langg = parse(resolve(__dirname, '../../partials/Yua-Translations/lang/' + lang + '.lang'))
+          this.all.set(lang, langg)
+        }
+    
+        resolveEnd(true)
+      })
+    })
   }
 }
 
@@ -80,40 +83,5 @@ function parse(path: string): Map<string, string> {
 
   return langMap
 }
-
-function parseMultiple(paths: string[]): Map<string, Map<string, string>> {
-  const langMaps = new Map()
-  for (const path of paths) {
-    const fullPath = resolve(path)
-    if (!path.endsWith('.lang') || !fs.existsSync(fullPath)) throw new Error(`Invalid file path: "${path}"`)
-    const pathSplit = fullPath.split('\\')
-    const result = parse(path)
-    langMaps.set(pathSplit[pathSplit.length - 1].replace(/.lang/, ""), result)
-  }
-  
-  return langMaps
-}
-
-function parseAllInDir(dir: string): Map<string, Map<string, string>> {
-  function getFiles(dir: string, _files?: string[]): string[] {
-    _files = _files || []
-    dir = resolve(dir)
-    const files = fs.readdirSync(dir)
-    for (const file of files) {
-      const name = resolve(dir + '/' + file)
-          
-      if (fs.statSync(name).isDirectory()) {
-        getFiles(name, _files)
-      } else if (name.endsWith('.lang')) {
-        _files.push(name)
-      }
-    }
-    
-    return _files
-  }
-  
-  return parseMultiple(getFiles(dir))
-}
-
 
 export = LangHandler

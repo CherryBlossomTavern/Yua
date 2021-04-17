@@ -99,16 +99,17 @@ class Yua extends Base {
 
       console.log("Registering LangHandler")
       this._LangHandler = new LangHandler(this)
-
-      console.log('Attempting Command Register')
-      this._CommandHandler = new CommandHandler(this)
-      this._CommandHandler.autoRegisterAll().then((res) => {
-        if (!res) {
-          throw new Error("Command Register Failed")
-        } else {
-          console.success(`Commands Registered`)
-          yua(this)
-        }
+      this._LangHandler.parseAllLang().then(() => {
+        console.log('Attempting Command Register')
+        this._CommandHandler = new CommandHandler(this)
+        this._CommandHandler.autoRegisterAll().then((res) => {
+          if (!res) {
+            throw new Error("Command Register Failed")
+          } else {
+            console.success(`Commands Registered`)
+            yua(this)
+          }
+        })
       })
     }
   }
