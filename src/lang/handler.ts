@@ -74,7 +74,7 @@ function parse(path: string): Map<string, string> {
   if (!path.endsWith('.lang') || !fs.existsSync(fullPath)) throw new Error(`Invalid file path: "${path}"`)
   console.log("parsing file")
   const langFile = fs.readFileSync(fullPath).toString()
-  //console.log(langFile)
+  console.log(langFile.split("\r\n"))
   const cleanLangFile = langFile.split("\r\n").filter(item => item.length > 0)
     .filter(item => !item.replace(/\s+/, "").startsWith('#'))
   console.log(cleanLangFile)
