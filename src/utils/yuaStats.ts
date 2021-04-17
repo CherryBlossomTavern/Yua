@@ -84,7 +84,7 @@ export class YuaStats {
 
         embed.fields.push({
           name: `<:o_:832766028488245278> Cluster ${cluster.clusterID}`,
-          value: `\`\`\`Guilds: ${cluster.guilds}\nUsers: ${cluster.users}\nRam: ${Math.round(cluster.ram)}mb\nUptime: ${Math.round(cluster.uptime / 1000)}s\nShards: ${cluster.shards}\`\`\``,
+          value: `\`\`\`Guilds: ${cluster.guilds}\nUsers: ${cluster.users}\nRam: ${Math.round(cluster.ram)}mb\nUptime: ${Math.round(Math.round(cluster.uptime / 1000) / 60)}m\nShards: ${cluster.shards}\`\`\``,
           inline: true,
         })
 
