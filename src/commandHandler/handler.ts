@@ -101,9 +101,9 @@ class CommandHandler {
     return true
   }
   public async registerRolePlay(): Promise<boolean> {
-    const commandFiles = readdirSync(path.resolve(__dirname, '../../partials/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
+    const commandFiles = readdirSync(path.resolve(__dirname, '../../submodules/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
     for (const command of commandFiles) {
-      const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../../partials/Yua-Roleplay/commands/${command}`))
+      const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../../submodules/Yua-Roleplay/commands/${command}`))
       const response = this.yua.langHandler.tempGetValue(rpCommand.response) || rpCommand.response
       const responses = response.split('|')
       const type = responses[1] ? 3 : (responses[0].split('%s')[1] ? 2 : 1)
