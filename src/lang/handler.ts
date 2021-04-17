@@ -55,11 +55,12 @@ class LangHandler {
     null
   }
   public tempGetValue(key: string): string {
-    return this._all.get(this._config.default).get(key)
+    return null
+    //this._all.get(this._config.default).get(key)
   }
   public parseAllLang(): void {
-    const langs = parseAllInDir(path.resolve(__dirname, '../../partials/Yua-Translations/lang'))
-    this._all = langs
+    // const langs = parseAllInDir(path.resolve(__dirname, '../../partials/Yua-Translations/lang'))
+    // this._all = langs
   }
 }
 
