@@ -1,6 +1,6 @@
 import { BaseCommand } from '../../'
 import { CommandProps } from '../../../@types'
-import Yua from '../../../client'
+import Yua from 'src/client'
 
 class YuaCommand extends BaseCommand {
   private yua: Yua
@@ -16,8 +16,9 @@ class YuaCommand extends BaseCommand {
     this.yua = yua
   }
   public execute(props: CommandProps): void {
-    if (!props.args[0]) return
-    
+    const {} = props
+
+    return
   }
 }
 

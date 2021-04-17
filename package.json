@@ -1,8 +1,12 @@
 {
   "name": "yua",
-  "version": "1.5.0",
+  "version": "1.0.1",
   "description": "Yua bot OWO",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=14.0.0 <=14.5.0"
+  },
+  "engineStrict": true,
   "scripts": {
     "build": "tsc",
     "dev": "nodemon --config nodemon.json src/index.ts",
@@ -34,21 +38,22 @@
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
     "eris": "^0.14.1",
+    "git-clone": "^0.1.0",
     "moment": "^2.29.1",
-    "mongoose": "^5.12.3",
+    "mongoose": "^5.12.4",
     "yuasharder": "^1.0.9"
   },
   "devDependencies": {
-    "@types/mongoose": "^5.10.4",
-    "@types/node": "^14.14.37",
-    "@typescript-eslint/eslint-plugin": "^4.20.0",
-    "@typescript-eslint/parser": "^4.20.0",
+    "@types/mongoose": "^5.10.5",
+    "@types/node": "^14.14.41",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
-    "eslint": "^7.23.0",
+    "eslint": "^7.24.0",
     "nodemon": "^2.0.7",
     "pre-commit": "^1.2.2",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.4"
   }
 }

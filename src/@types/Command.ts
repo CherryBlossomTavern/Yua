@@ -54,6 +54,7 @@ export interface CommandExtra {
 export interface CommandProps {
   message: Eris.Message
   args: string[]
+  guild: Eris.Guild
   send(content: string | { embed: Eris.EmbedOptions }): Promise<Eris.Message>
   embed(options: Eris.EmbedOptions): Promise<Eris.Message>
   quickEmbed(title?: string, description?: string, color?: number): Promise<Eris.Message>

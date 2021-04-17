@@ -6,7 +6,7 @@ import {
   prefixes,
   categoryHelp,
 } from '../../../config'
-import Yua from '../../../client'
+import Yua from 'src/client'
 
 class YuaCommand extends BaseCommand {
   private yua: Yua
@@ -34,7 +34,7 @@ class YuaCommand extends BaseCommand {
       const helpEmbed: EmbedOptions = {
         title: "Yua For Dummies",
         color: colors.default,
-        description: `I hope this guide will prove useful in enhancing your knowledge on me <3\nTo get more information on a certain category or command use\n\`${prefixes[0]} [section|command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`()\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], (), | symbols when using the command!**`,
+        description: `I hope this guide will prove useful in enhancing your knowledge on me <3\nTo get more information on a certain category or command use\n\`${prefixes[0]} [section|command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**`,
         // thumbnail: {
         //   url: this.yua.client.user.avatarURL,
         // },
@@ -94,13 +94,18 @@ class YuaCommand extends BaseCommand {
                   .toLowerCase()
                   .slice(1)
           //if (commandsDes.length > 0) commandsDes += "\n"
-          commandsDes += `\n\n**${commandNameUppercase}**\n*${command.extra.description}*${command.extra.aliases[0] ? `\n**Aliases:** \`${command.extra.aliases.join("`, `")}\`` : "" }\n**Usage:** \`${prefixes[0]} ${command.name}${command.extra.usage ? ` ${command.extra.usage}` : ""}\``
+
+          
+          const description = this.yua.langHandler.tempGetValue(command.extra.description) || command.extra.description
+
+          
+          commandsDes += `\n\n**${commandNameUppercase}**\n*${description}*${command.extra.aliases[0] ? `\n**Aliases:** \`${command.extra.aliases.join("`, `")}\`` : "" }\n**Usage:** \`${prefixes[0]} ${command.name}${command.extra.usage ? ` ${command.extra.usage}` : ""}\``
         }
   
         const catEmbed: EmbedOptions = {
           title: `Yua For Dummies | ${uppercaseCat}`,
           color: colors.default,
-          description: `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`()\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], (), | symbols when using the command!**${commandsDes}`,
+          description: `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**${commandsDes}`,
           // thumbnail: {
           //   url: this.yua.client.user.avatarURL,
           // },
@@ -110,10 +115,10 @@ class YuaCommand extends BaseCommand {
         }
         
         if (catEmbed.description.length > 2047) {
-          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`()\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], (), | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
+          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
         }
         if (catEmbed.description.length > 2047) {
-          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`()\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], (), | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*`
+          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*`
           embed(catEmbed)
           catEmbed.description = `\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
         }
@@ -142,10 +147,15 @@ class YuaCommand extends BaseCommand {
               command.name
                 .toLowerCase()
                 .slice(1)
+
+
+          const description = this.yua.langHandler.tempGetValue(command.extra.description) || command.extra.description
+
+
           const cmdEmbed: EmbedOptions = {
             title: `Yua For Dummies | ${uppercaseCat} | ${commandNameUppercase}`,
             color: colors.default,
-            description: `Here is specific info on **${command.name}** I hope you find what you were looking for <3\n\nCommand Arguments:\n- \`[]\` is optional\n- \`()\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], (), | symbols when using the command!**`,
+            description: `Here is specific info on **${command.name}** I hope you find what you were looking for <3\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**`,
             fields: [
               {
                 name: "Usage",
@@ -154,7 +164,7 @@ class YuaCommand extends BaseCommand {
               },
               {
                 name: "Description",
-                value: `\`\`\`${command.extra.description}\`\`\``,
+                value: `\`\`\`${description}\`\`\``,
                 inline: false,
               },
               {

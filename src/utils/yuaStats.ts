@@ -72,7 +72,7 @@ export class YuaStats {
           if (!stats.clusters.find(c => c.clusterID === i) && !clusters.includes(i)) {
             clusters.push(i)
             embed.fields.push({
-              name: `Cluster ${i}`,
+              name: `<:d_:832766028010094604> Cluster ${i}`,
               value: `\`Awaiting Shards...\``,
               inline: true,
             })
@@ -83,8 +83,8 @@ export class YuaStats {
       } else {
 
         embed.fields.push({
-          name: `Cluster ${cluster.clusterID}`,
-          value: `\`\`\`Guilds: ${cluster.guilds}\nUsers: ${cluster.users}\nRam: ${Math.round(cluster.ram)}mb\nUptime: ${Math.round(cluster.uptime / 1000)}s\nShards: ${cluster.shards}\`\`\``,
+          name: `<:o_:832766028488245278> Cluster ${cluster.clusterID}`,
+          value: `\`\`\`Guilds: ${cluster.guilds}\nUsers: ${cluster.users}\nRam: ${Math.round(cluster.ram)}mb\nUptime: ${Math.round(Math.round(cluster.uptime / 1000) / 60)}m\nShards: ${cluster.shards}\`\`\``,
           inline: true,
         })
 
@@ -97,10 +97,10 @@ export class YuaStats {
   }
   
   public sortClusters(a: DiscordEmbedFields, b: DiscordEmbedFields): number {
-    if (parseInt(a.name.replace(/\D+/g, "")) < parseInt(b.name.replace(/\D+/g, ""))) {
+    if (parseInt(a.name.replace(/<.*>/, "").replace(/\D+/g, "")) < parseInt(b.name.replace(/<.*>/, "").replace(/\D+/g, ""))) {
       return -1
     }
-    if (parseInt(a.name.replace(/\D+/g, "")) > parseInt(b.name.replace(/\D+/g, ""))) {
+    if (parseInt(a.name.replace(/<.*>/, "").replace(/\D+/g, "")) > parseInt(b.name.replace(/<.*>/, "").replace(/\D+/g, ""))) {
       return 1
     }
 

@@ -13,10 +13,18 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "removeComments": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    // "paths": {
+    //   "database": [ "src/database" ],
+    //   "commandHandler": [ "src/commandHandler" ],
+    //   "models": [ "src/database/models" ],
+    //   "@types": [ "src/@types" ],
+    //   "src": [ "src/" ]
+    // }
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "modules/**/*"
   ],
   "exclude": [
     "node_modules",

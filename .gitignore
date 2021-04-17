@@ -116,5 +116,7 @@ out
 .pnp.*
 
 # Extra
-/bin
-/dist
+bin/
+dist/
+runtime/
+# yuaTranslations/

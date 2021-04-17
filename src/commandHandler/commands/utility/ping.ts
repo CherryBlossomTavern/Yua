@@ -1,7 +1,7 @@
 import { BaseCommand } from '../../'
 import { CommandProps } from '../../../@types'
 import { colors } from '../../../config'
-import Yua from '../../../client'
+import Yua from 'src/client'
 import mongoose from 'mongoose'
 
 class YuaCommand extends BaseCommand {
