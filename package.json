@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Yua bot OWO",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=14.0.0 <=15.0.0"
+  },
+  "engineStrict": true,
   "scripts": {
     "build": "tsc",
     "dev": "nodemon --config nodemon.json src/index.ts",
