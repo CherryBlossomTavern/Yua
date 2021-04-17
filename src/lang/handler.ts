@@ -12,6 +12,7 @@ class LangHandler {
     this.parseAllLang()
     import(path.resolve(__dirname, "../../partials/Yua-Translations/config.json")).then(r => {
       this._config = r.default
+      console.log(this.config)
     })
   }
   get all(): Map<string, Map<string, string>> {
