@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import {
+import Eris, {
   Member,
   Message,
   EmbedOptions,
@@ -101,9 +101,9 @@ class CommandHandler {
     return true
   }
   public async registerRolePlay(): Promise<boolean> {
-    const commandFiles = readdirSync(path.resolve(__dirname, '../resources/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
+    const commandFiles = readdirSync(path.resolve(__dirname, '../../modules/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
     for (const command of commandFiles) {
-      const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../resources/Yua-Roleplay/commands/${command}`))
+      const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../../modules/Yua-Roleplay/commands/${command}`))
       const response = this.yua.langHandler.tempGetValue(rpCommand.response) || rpCommand.response
       const responses = response.split('|')
       const type = responses[1] ? 3 : (responses[0].split('%s')[1] ? 2 : 1)
@@ -248,8 +248,11 @@ class CommandHandler {
       try {
         if (!args[0]) return null
         const guild = yua.client.guilds.get(props.message.guildID)
-        const user =
-          guild.members.get(message.mentions[0]?.id) ||
+        let user: Eris.Member
+        if (message.mentions[0]) {
+          user = guild.members.get(message.mentions[0].id)
+        }
+        user =
           guild.members.get(args[0]) ||
           guild.members.find(({ username }) => username === args[0]) ||
           (await guild.fetchMembers({

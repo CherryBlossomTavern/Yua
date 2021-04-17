@@ -1,0 +1,199 @@
+######## Commands ########
+
+#### Roleplay >> If a roleplay command is both a towards and solo concatenate with "|", Use "%s" for name insertions
+
+## Baka
+yua.commands.baka.description=
+yua.commands.baka.response=
+## Bite
+yua.commands.bite.description=
+yua.commands.bite.response=
+## Blowkiss
+yua.commands.blowkiss.description=
+yua.commands.blowkiss.response=
+## Blush
+yua.commands.blush.description=
+yua.commands.blush.response=
+## Boast
+yua.commands.boast.description=
+yua.commands.boast.response=
+## Bonk
+yua.commands.bonk.description=
+yua.commands.bonk.response=
+## Bored
+yua.commands.bored.description=
+yua.commands.bored.response=
+## Bye
+yua.commands.bye.description=
+yua.commands.bye.response=
+## Cheer
+yua.commands.cheer.description=
+yua.commands.cheer.response=
+## Confused
+yua.commands.confused.description=
+yua.commands.confused.response=
+## Cry
+yua.commands.cry.description=
+yua.commands.cry.response=
+## Cute
+yua.commands.cute.description=
+yua.commands.cute.response=
+## Dab
+yua.commands.dab.description=
+yua.commands.dab.response=
+## Dance
+yua.commands.dance.description=
+yua.commands.dance.response=
+## Dead
+yua.commands.dead.description=
+yua.commands.dead.response=
+## Eat
+yua.commands.eat.description=
+yua.commands.eat.response=
+## Facepalm
+yua.commands.facepalm.description=
+yua.commands.facepalm.response=
+## Fear
+yua.commands.fear.description=
+yua.commands.fear.response=
+## Feed
+yua.commands.feed.description=
+yua.commands.feed.response=
+## Fight
+yua.commands.fight.description=
+yua.commands.fight.response=
+## Glomp
+yua.commands.glomp.description=
+yua.commands.glomp.response=
+## Goodmorning
+yua.commands.goodmorning.description=
+yua.commands.goodmorning.response=
+## Goodnight
+yua.commands.goodnight.description=
+yua.commands.goodnight.response=
+## Grumpy
+yua.commands.grumpy.description=
+yua.commands.grumpy.response=
+## Happy
+yua.commands.happy.description=
+yua.commands.happy.response=
+## Hello 
+yua.commands.hello.description=
+yua.commands.hello.response=
+## Highfive
+yua.commands.highfive.description=
+yua.commands.highfive.response=
+## Hug
+yua.commands.hug.description=
+yua.commands.hug.response=
+## Kill
+yua.commands.kill.description=
+yua.commands.kill.response=
+## Kiss
+yua.commands.kiss.description=
+yua.commands.kiss.response=
+## Laugh
+yua.commands.laugh.description=
+yua.commands.laugh.response=
+## Lewd
+yua.commands.lewd.description=
+yua.commands.lewd.response=
+## Lick
+yua.commands.lick.description=
+yua.commands.lick.response=
+## Love
+yua.commands.love.description=
+yua.commands.love.response=
+## Lurk
+yua.commands.lurk.description=
+yua.commands.lurk.response=
+## Mad
+yua.commands.mad.description=
+yua.commands.mad.response=
+## No
+yua.commands.no.description=
+yua.commands.no.response=
+## Nom
+yua.commands.nom.description=
+yua.commands.nom.response=
+## Nope
+yua.commands.nope.description=
+yua.commands.nope.response=
+## Panic
+yua.commands.panic.description=
+yua.commands.panic.response=
+## Pat
+yua.commands.pat.description=
+yua.commands.pat.response=
+## Peck
+yua.commands.peck.description=
+yua.commands.peck.response=
+## Poke
+yua.commands.poke.description=
+yua.commands.poke.response=
+## Pout
+yua.commands.pout.description=
+yua.commands.pout.response=
+## Respect
+yua.commands.respect.description=
+yua.commands.respect.response=
+## Run
+yua.commands.run.description=
+yua.commands.run.response=
+## Sad
+yua.commands.sad.description=
+yua.commands.sad.response=
+## Salute
+yua.commands.salute.description=
+yua.commands.salute.response=
+## Shrug
+yua.commands.shrug.description=
+yua.commands.shrug.response=
+## Shy
+yua.commands.shy.description=
+yua.commands.shy.response=
+## Sip
+yua.commands.sip.description=
+yua.commands.sip.response=
+## Slap
+yua.commands.slap.description=
+yua.commands.slap.response=
+## Sleep
+yua.commands.sleep.description=
+yua.commands.sleep.response=
+## Smart
+yua.commands.smart.description=
+yua.commands.smart.response=
+## Smile
+yua.commands.smile.description=
+yua.commands.smile.response=
+## Stab
+yua.commands.stab.description=
+yua.commands.stab.response=
+## Stare
+yua.commands.stare.description=
+yua.commands.stare.response=
+## Thumbsup
+yua.commands.thumbsup.description=
+yua.commands.thumbsup.response=
+## Tickle
+yua.commands.tickle.description=
+yua.commands.tickle.response=
+## Tired
+yua.commands.tired.description=
+yua.commands.tired.response=
+## Vibe
+yua.commands.vibe.description=
+yua.commands.vibe.response=
+## Wag
+yua.commands.wag.description=
+yua.commands.wag.response=
+## Wave
+yua.commands.wave.description=
+yua.commands.wave.response=
+## Wing
+yua.commands.wing.description=
+yua.commands.wing.response=
+## Yes
+yua.commands.yes.description=
+yua.commands.yes.response=

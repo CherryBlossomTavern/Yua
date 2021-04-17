@@ -1,21 +1,27 @@
 import Yua from 'src/client'
 import { parseAllInDir } from 'dotlang'
 import path from 'path'
-import langConfig from '../resources/Yua-Translations/config.json'
 // Do dis l8tr
 class LangHandler {
   private yua: Yua
   private _all: Map<string, Map<string, string>> = new Map()
   private _cache: Map<string, string> = new Map()
+  private _config: { langs: string[], default: string }
   constructor(yua: Yua) {
     this.yua = yua
     this.parseAllLang()
+    import(path.resolve(__dirname, "../../modules/Yua-Translations/config.json")).then(r => {
+      this._config = r.default
+    })
   }
   get all(): Map<string, Map<string, string>> {
     return this._all
   }
   get cache(): Map<string, string> {
     return this._cache
+  }
+  get config(): { langs: string[], default: string } {
+    return this._config
   }
   public addLang(): void {
     null
@@ -48,10 +54,10 @@ class LangHandler {
     null
   }
   public tempGetValue(key: string): string {
-    return this._all.get(langConfig.default).get(key)
+    return this._all.get(this._config.default).get(key)
   }
   public parseAllLang(): void {
-    const langs = parseAllInDir(path.resolve(__dirname, '../resources/Yua-Translations/lang'))
+    const langs = parseAllInDir(path.resolve(__dirname, '../../modules/Yua-Translations/lang'))
     this._all = langs
   }
 }

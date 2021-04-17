@@ -4,7 +4,7 @@ import {
   Document,
   Model,
 } from 'mongoose'
-import langConfig from '../../resources/Yua-Translations/config.json'
+//import langConfig from '../../resources/Yua-Translations/config.json'
 
 interface ownerGuild extends Document {
   guildID: string
@@ -18,7 +18,7 @@ const schema: Schema = new Schema({
   },
   locale: {
     type: String,
-    default: langConfig.default,
+    default: "en_US",
   },
 }, { versionKey: false })
 
