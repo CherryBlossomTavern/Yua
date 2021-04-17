@@ -76,4 +76,4 @@ Whenever a version is bumped all versions following it will reset to 0.
 For example if Yua's current version is `1.5.24` and we make a minor change the version will become `1.6.0` __**not**__ `1.6.24`
 
 ## License
-Forgot to add this whoops...
+[AGPL-3.0](https://choosealicense.com/licenses/agpl-3.0/)

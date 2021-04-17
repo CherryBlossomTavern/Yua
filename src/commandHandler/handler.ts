@@ -13,11 +13,17 @@ import {
 
 import path from 'path'
 import { readdirSync } from 'fs'
-import { BaseCommand } from './base/BaseCommand'
-import Yua from '../client'
-import { default as axios } from 'axios' 
+import { BaseCommand } from './'
+import Yua from 'src/client'
 import { CommandProps } from '../@types'
 import Template from './template/template/command'
+
+interface RPCommandJson {
+  name: string
+  description: string
+  response: string
+  links: string[]
+}
 
 interface RPCommand {
   name: string
@@ -87,82 +93,52 @@ class CommandHandler {
         } else this.yua.console.warn(`${file} does not include a name prop, cannot be executed`)
       }
     })
-    const rpResp = await this.refreshRolePlay()
+    const rpResp = await this.registerRolePlay()
     if (!rpResp) {
       this.yua.console.error(`Roleplay Commands Failed To Register`)
     }
 
     return true
   }
-  public async refreshRolePlay(): Promise<boolean> {
-    return new Promise((resolve) => {
-      // TEMP
-      const SheetID = "1EWmNQ7KeN7xDvYjCQMZecLa84Kz3bF7uILnZ9aNaQQw"
-      axios({
-        method: 'get',
-        url: 'https://api.fureweb.com/spreadsheets/' + SheetID,
-      }).then(res => {
-        const data = res.data.data
-        if (!data[0]) return resolve(false)
-
-        const roleplayCommands = Array.from(this.filter(c => c.extra.category === 'roleplay').keys())
-        if (roleplayCommands[0]) {
-          for (const name of roleplayCommands) {
-            this.remove(name)
+  public async registerRolePlay(): Promise<boolean> {
+    const commandFiles = readdirSync(path.resolve(__dirname, '../resources/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
+    for (const command of commandFiles) {
+      const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../resources/Yua-Roleplay/commands/${command}`))
+      const response = this.yua.langHandler.tempGetValue(rpCommand.response) || rpCommand.response
+      const responses = response.split('|')
+      const type = responses[1] ? 3 : (responses[0].split('%s')[1] ? 2 : 1)
+      const sendRoleplay = this.sendRoleplay
+      this.add(
+        new (
+          class YuaRpCommand extends BaseCommand {
+            private yua: Yua
+            links: string[] = rpCommand.links
+            constructor(yua: Yua) {
+              super(rpCommand.name, {
+                description: rpCommand.description,
+                usage: type === 3 ? "[user] [reason]" : (type === 2 ? "<user> [reason]" : "[reason]"),
+                category: "roleplay",
+                aliases: [],
+              })
+              this.yua = yua
+            }
+            public execute(props: CommandProps): void {
+              sendRoleplay({
+                name: rpCommand.name,
+                description: rpCommand.description,
+                response: response,
+                type: type,
+                links: rpCommand.links,
+              }, props, this.yua)
+            }
           }
-        }
+        )(this.yua),
+      )
+    }
 
-        interface RoleplayInterface {
-          Command: string
-          Description: string
-          Response: string
-          [key: string]: string
-        }
-
-        for (const roleplay of data) {
-          const typedRoleplay: RoleplayInterface = roleplay
-          const name:string = typedRoleplay.Command.toLowerCase()
-          const description:string = typedRoleplay.Description
-          const response:string = typedRoleplay.Response
-          const type:number = response.includes("%RECIEVER%") ? (response.includes("|") ? 3 : 2) : 1
-          const links: string[] = Object.values(typedRoleplay).filter((item: string) => item.includes("https://"))
-          const sendRoleplay = this.sendRoleplay
-          this.add(
-            new (
-              class YuaRoleplayCommand extends BaseCommand {
-                private yua: Yua
-                public links: string[] = links
-                constructor(yua: Yua) {
-                  super(name, {
-                    usage: type === 3 ? "[user] [reason]" : (type === 2 ? "<user> [reason]" : "[reason]"),
-                    description: description,
-                    category: "roleplay",
-                    aliases: [],
-                    permissions: [], // Not Yet Implemented
-                    type: 'all', // Not Yet Implemented
-                  })
-                  this.yua = yua
-                }
-                public execute(props: CommandProps): void {
-                  sendRoleplay({
-                    name: name,
-                    description: description,
-                    response: response,
-                    type: type,
-                    links: links,
-                  }, props, this.yua)
-                }
-              }
-            )(this.yua),
-          )
-        }
-        resolve(true)
-      })
-        .catch(err => {
-          throw err
-        })
-    })
+    return true
   }
+
   public async sendRoleplay(rpCommand: RPCommand, props: CommandProps, yua: Yua): Promise<void> {
     const {
       message,
@@ -175,9 +151,8 @@ class CommandHandler {
         const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
         //console.log(gif)
         let response = rpCommand.response
-
         if (rpCommand.type === 3) {
-          response = response.split("|").filter(i => !i.includes("%RECIEVER%"))[0]
+          response = response.split("|").filter(i => i.split("%s").length < 3)[0]
         }
         if (!response) {
           quickEmbed(null, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
@@ -187,7 +162,7 @@ class CommandHandler {
 
         embed({
           color: colors.default,
-          description: `${response.replace(/%SENDER%/g, message.member.nick || message.member.username)}\n${args[0] ? ` *"${args.join(" ").replace(/\*/g, "")}"*` : ""}`,
+          description: `${response.replace("%s", message.member.nick || message.member.username)}\n${args[0] ? ` *"${args.join(" ").replace(/\*/g, "")}"*` : ""}`,
           image: {
             url: gif,
           },
@@ -245,7 +220,7 @@ class CommandHandler {
         let response = rpCommand.response
 
         if (rpCommand.type === 3) {
-          response = response.split("|").filter(i => i.includes("%RECIEVER%"))[0]
+          response = response.split("|").filter(i => i.split("%s").length > 2)[0]
         }
 
         if (!response) {
@@ -256,7 +231,7 @@ class CommandHandler {
 
         embed({
           color: colors.default,
-          description: `${response.replace(/%SENDER%/g, message.member.nick || message.member.username).replace(/%RECIEVER%/g, user.nick || user.username)}\n${args[0] ? ` *"${args.join(" ").replace(/\*/g, "")}"*` : ""}`,
+          description: `${response.replace("%s", message.member.nick || message.member.username).replace("%s", user.nick || user.username)}\n${args[0] ? ` *"${args.join(" ").replace(/\*/g, "")}"*` : ""}`,
           image: {
             url: gif,
           },
@@ -361,7 +336,7 @@ class CommandHandler {
         color: color || colors.default,
       })
     }
-
+    //console.log(this.yua.config)
     if (command.extra.devOnly && !this.yua.config.devs.includes(message.author.id)) {
       quickEmbed(null, "Apologies, but only my maintainers can utilize this!", colors.error)
 
@@ -385,6 +360,7 @@ class CommandHandler {
       }
     }
 
+    const guild = this.yua.client.guilds.get(message.guildID)
 
     try {
       const props: CommandProps = {
@@ -393,6 +369,7 @@ class CommandHandler {
         send,
         embed,
         quickEmbed,
+        guild,
       }
 
       await command.execute(props)

@@ -2,7 +2,7 @@ import {
   Message,
 } from 'eris'
 
-import Yua from '../client'
+import Yua from 'src/client'
 
 export default (yua: Yua) => (msg: Message): void => {
   yua.commandHandler.parseCommand(msg)

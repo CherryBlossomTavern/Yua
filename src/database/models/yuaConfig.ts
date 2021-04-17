@@ -15,7 +15,6 @@ interface yuaConfig extends Document {
   statsEnabled: boolean
   statsChannelID: string
   statsMessageID: string
-  roleplaySheetID: string
   donoRoles: Record<string, number>
   devs: string[]
 }
@@ -38,10 +37,6 @@ const schema: Schema = new Schema({
     default: null,
   },
   statsMessageID: {
-    type: String,
-    default: null,
-  },
-  roleplaySheetID: {
     type: String,
     default: null,
   },

@@ -23,6 +23,7 @@ import {
 import * as console from './logs'
 import { default as yua } from './yua'
 import { CommandHandler } from './commandHandler'
+import { LangHandler } from './lang'
 
 class Yua extends Base {
   public readonly statsCluster: number = parseInt(process.env.STATS_CLUSTER)
@@ -34,6 +35,7 @@ class Yua extends Base {
   private _console = console
   private _YuaStats: YuaStats = null
   private _CommandHandler: CommandHandler = null
+  private _LangHandler: LangHandler = null
   constructor(props: BaseClassProps) {
     super(props)
   }
@@ -52,7 +54,9 @@ class Yua extends Base {
   get commandHandler(): CommandHandler {
     return this._CommandHandler
   }
-
+  get langHandler(): LangHandler {
+    return this._LangHandler
+  }
   /**
    * Dont use this, it is called by yuasharder to start yua, but we are using it to get the owner guild
    * @summary Never Call This Manually
@@ -92,6 +96,9 @@ class Yua extends Base {
       } else {
         console.custom('YUA_WARN', 'yellow', "Yua started but no owner guild, most likely probability: fetchOwnerGuild disabled or no owner guild ID")
       }
+
+      console.log("Registering LangHandler")
+      this._LangHandler = new LangHandler(this)
 
       console.log('Attempting Command Register')
       this._CommandHandler = new CommandHandler(this)
