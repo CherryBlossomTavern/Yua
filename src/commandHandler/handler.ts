@@ -248,11 +248,8 @@ class CommandHandler {
       try {
         if (!args[0]) return null
         const guild = yua.client.guilds.get(props.message.guildID)
-        let user: Eris.Member
-        if (message.mentions[0]) {
-          user = guild.members.get(message.mentions[0].id)
-        }
-        user =
+        const user =
+          guild.members.get(message.mentions[0]?.id) ||
           guild.members.get(args[0]) ||
           guild.members.find(({ username }) => username === args[0]) ||
           (await guild.fetchMembers({
