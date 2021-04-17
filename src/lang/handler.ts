@@ -10,7 +10,7 @@ class LangHandler {
   constructor(yua: Yua) {
     this.yua = yua
     this.parseAllLang()
-    import(path.resolve(__dirname, "../../modules/Yua-Translations/config.json")).then(r => {
+    import(path.resolve(__dirname, "../../partials/Yua-Translations/config.json")).then(r => {
       this._config = r.default
     })
   }
@@ -57,7 +57,7 @@ class LangHandler {
     return this._all.get(this._config.default).get(key)
   }
   public parseAllLang(): void {
-    const langs = parseAllInDir(path.resolve(__dirname, '../../modules/Yua-Translations/lang'))
+    const langs = parseAllInDir(path.resolve(__dirname, '../../partials/Yua-Translations/lang'))
     this._all = langs
   }
 }
