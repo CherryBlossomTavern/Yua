@@ -311,8 +311,14 @@ class CommandHandler {
       return
     }
 
-    if (!prefixRegEXP.test(content.replace(`<@${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>").replace(`<@!${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>"))) return // If Content Does Not Include Prefix
+    if (!prefixRegEXP.test(
+      content
+        .toLowerCase()
+        .replace(`<@${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>")
+        .replace(`<@!${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>"),
+    )) return // If Content Does Not Include Prefix
     args[0] = args[0]
+      .toLowerCase()
       .replace(`<@!${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>")
       .replace(`<@${this.yua.client.user.id}>`, "<YUA_BOT_MENTION>")
       .replace(prefixRegEXP, "")

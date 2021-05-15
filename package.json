@@ -4,7 +4,7 @@
   "description": "Yua bot OWO",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=14.0.0 <=14.15.0"
+    "node": ">=14.0.0 <=14.15.4"
   },
   "engineStrict": true,
   "scripts": {

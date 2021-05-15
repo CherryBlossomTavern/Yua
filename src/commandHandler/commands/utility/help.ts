@@ -34,7 +34,7 @@ class YuaCommand extends BaseCommand {
       const helpEmbed: EmbedOptions = {
         title: "Yua For Dummies",
         color: colors.default,
-        description: `I hope this guide will prove useful in enhancing your knowledge on me <3\nTo get more information on a certain category or command use\n\`${prefixes[0]} [section|command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**`,
+        description: `I hope this guide will prove useful in enhancing your knowledge on me <3\nTo get more information on a certain category or command use\n\`${prefixes[0]} help [section|command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**`,
         // thumbnail: {
         //   url: this.yua.client.user.avatarURL,
         // },
@@ -64,7 +64,7 @@ class YuaCommand extends BaseCommand {
       }
       helpEmbed.fields.push({
         name: "Extra Links and Information",
-        value: `[Invite](https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua) | [Website]() | [Support](https://discord.gg/yua) | [Vote]() | [Patreon](https://www.patreon.com/yuabot)`,
+        value: `[Invite](https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua) | [Website]() | [Support](https://discord.gg/yua) | [Vote](https://top.gg/bot/808779804789702696) | [Patreon](https://www.patreon.com/yuabot)`,
         inline: false,
       })
       embed(helpEmbed)
@@ -105,7 +105,7 @@ class YuaCommand extends BaseCommand {
         const catEmbed: EmbedOptions = {
           title: `Yua For Dummies | ${uppercaseCat}`,
           color: colors.default,
-          description: `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**${commandsDes}`,
+          description: `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} help [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**${commandsDes}`,
           // thumbnail: {
           //   url: this.yua.client.user.avatarURL,
           // },
@@ -115,10 +115,10 @@ class YuaCommand extends BaseCommand {
         }
         
         if (catEmbed.description.length > 2047) {
-          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
+          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} help [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
         }
         if (catEmbed.description.length > 2047) {
-          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*`
+          catEmbed.description = `Here are all my **${args[0]}** commands, I hope you find what you were looking for <3\nTo get more information on a command use\n\`${prefixes[0]} help [command|alias]\`\n\nCommand Arguments:\n- \`[]\` is optional\n- \`<>\` is required\n- \`|\` means "OR"\n**\nDo not actually include [], <>, | symbols when using the command!**\n\n*It appears there are too many commands for me to display detailed info on them!*`
           embed(catEmbed)
           catEmbed.description = `\n\n**Commands:**\n\`${commands.map(c => c.name).join("`, `")}\``
         }

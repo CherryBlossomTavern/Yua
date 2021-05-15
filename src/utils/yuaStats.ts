@@ -23,6 +23,11 @@ export class YuaStats {
   private Yua: import('../client')
   constructor(Yua: import('../client')) {
     this.Yua = Yua
+    if (process.env.NODE_ENV !== 'production') {
+      this.Yua.console.warn('NODE_ENV not in production, disabling stats updater')
+      
+      return
+    }
     this.Yua.ipc.register('stats', (message) => {
       if (this.Yua.config.statsEnabled && this.Yua.config.statsChannelID) {
         this.sendStats(message.msg, this.Yua.config.statsChannelID, this.Yua.config.statsMessageID)
