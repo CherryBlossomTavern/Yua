@@ -124,9 +124,8 @@ class Yua extends Base {
       }
     })
 
-    this.ipc.register("YUA_CONFIG_UPDATED", ({ msg }) => {
+    this.ipc.register("YUA_CONFIG_UPDATED", ({ msg }) => { 
       this._config = msg.config
-      //console.log("Yua Config Updated:::", "statsEnabled:", msg.config.statsEnabled)
     })
 
     this.ipc.register("FORCE_OWNER_GUILD_UPDATE", () => {
