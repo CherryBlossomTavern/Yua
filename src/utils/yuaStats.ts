@@ -45,7 +45,7 @@ export class YuaStats {
         this._retryCount = 0
       })
       .catch((err) => {
-        if (this._retryCount = this.maxRetrys) {
+        if (this._retryCount === this.maxRetrys) {
           YuaConfig.findOneAndUpdate({ dummyID: 1 }, { statsEnabled: false }, { new: true })
             .then((res) => {
               this.Yua.ipc.broadcast("YUA_CONFIG_UPDATED", { config: res })
