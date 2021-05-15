@@ -21,6 +21,9 @@ const backupEmbed: DiscordEmbed = {
 
 export class YuaStats {
   private Yua: import('../client')
+  private _retryCount = 0
+  private _retryTimeout = 2000
+  public maxRetrys = 5
   constructor(Yua: import('../client')) {
     this.Yua = Yua
     if (process.env.NODE_ENV !== 'production') {
@@ -38,14 +41,24 @@ export class YuaStats {
   public sendStats(stats: MasterStats, channelID: string, messageID: string): void {
     const embed = this.embedStats(stats)
     this.makeRequest('patch', `https://discord.com/api/v8/channels/${channelID}/messages/${messageID}`, embed)
+      .then(() => {
+        this._retryCount = 0
+      })
       .catch((err) => {
-        YuaConfig.findOneAndUpdate({ dummyID: 1 }, { statsEnabled: false }, { new: true })
-          .then((res) => {
-            this.Yua.ipc.broadcast("YUA_CONFIG_UPDATED", { config: res })
-            this.makeRequest('post', `https://discord.com/api/v8/channels/${channelID}/messages`, backupEmbed)
-              .catch(err)
-          })
-          .catch((err) => { throw err })
+        if (this._retryCount = this.maxRetrys) {
+          YuaConfig.findOneAndUpdate({ dummyID: 1 }, { statsEnabled: false }, { new: true })
+            .then((res) => {
+              this.Yua.ipc.broadcast("YUA_CONFIG_UPDATED", { config: res })
+              this.makeRequest('post', `https://discord.com/api/v8/channels/${channelID}/messages`, backupEmbed)
+                .catch(err)
+            })
+            .catch((err) => { throw err })
+        } else {
+          setTimeout(() => {
+            this.sendStats(stats, channelID, messageID)
+            this._retryCount ++
+          }, this._retryTimeout)
+        }
       })
   }
 
