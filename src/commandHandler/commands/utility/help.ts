@@ -5,6 +5,7 @@ import {
   colors,
   prefixes,
   categoryHelp,
+  inviteRedirect,
 } from '../../../config'
 import Yua from 'src/client'
 
@@ -64,7 +65,7 @@ class YuaCommand extends BaseCommand {
       }
       helpEmbed.fields.push({
         name: "Extra Links and Information",
-        value: `[Invite](https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua) | [Website]() | [Support](https://discord.gg/yua) | [Vote](https://top.gg/bot/808779804789702696) | [Patreon](https://www.patreon.com/yuabot)`,
+        value: `[Invite](https://discord.com/oauth2/authorize?client_id=${this.yua.client.user.id}&scope=bot&permissions=8&redirect_uri=${inviteRedirect}) | [Website]() | [Support](https://discord.gg/yua) | [Vote](https://top.gg/bot/808779804789702696) | [Patreon](https://www.patreon.com/yuabot)`,
         inline: false,
       })
       embed(helpEmbed)

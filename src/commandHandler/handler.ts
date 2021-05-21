@@ -11,6 +11,10 @@ import {
   prefixes,
 } from '../config'
 
+import {
+  RoleplayCounter,
+} from '../database/models'
+
 import path from 'path'
 import { readdirSync } from 'fs'
 import { BaseCommand } from './'
@@ -21,20 +25,18 @@ import Template from './template/template/command'
 interface RPCommandJson {
   name: string
   description: string
-  response: string
   links: string[]
+  aliases: string[]
+  "responses.self"?: string
+  "responses.towards"?: string
+  "responses.want"?: string
+  "counters.self"?: string
+  "counters.towards"?: string
+  "counters.want"?: string
 }
 
-interface RPCommand {
-  name: string
-  description: string
-  response: string
-  type: number
-  links: string[]
-}
-
-interface RpCommandClass extends BaseCommand {
-  links?: string[]
+interface YuaRpCommand extends BaseCommand {
+  json: RPCommandJson
 }
 
 class CommandHandler {
@@ -104,32 +106,26 @@ class CommandHandler {
     const commandFiles = readdirSync(path.resolve(__dirname, '../../submodules/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
     for (const command of commandFiles) {
       const rpCommand: RPCommandJson = await import(path.resolve(__dirname, `../../submodules/Yua-Roleplay/commands/${command}`))
-      const response = this.yua.langHandler.tempGetValue(rpCommand.response) || rpCommand.response
-      const responses = response.split('|')
-      const type = responses[1] ? 3 : (responses[0].split('%s')[1] ? 2 : 1)
+      let type: "self" | "towards" | "both" = 'both'
+      if (rpCommand['responses.self'] && !rpCommand['responses.towards']) type = 'self'
+      else if (!rpCommand['responses.self'] && rpCommand['responses.towards']) type = 'towards'
       const sendRoleplay = this.sendRoleplay
       this.add(
         new (
           class YuaRpCommand extends BaseCommand {
             private yua: Yua
-            links: string[] = rpCommand.links
+            public json: RPCommandJson = rpCommand
             constructor(yua: Yua) {
               super(rpCommand.name, {
                 description: rpCommand.description,
-                usage: type === 3 ? "[user] [reason]" : (type === 2 ? "<user> [reason]" : "[reason]"),
-                category: "roleplay",
-                aliases: [],
+                usage: type === 'both' ? "[user] [reason]" : (type === 'towards' ? "<user> [reason]" : "[reason]"),
+                category: 'roleplay',
+                aliases: rpCommand.aliases,
               })
               this.yua = yua
             }
             public execute(props: CommandProps): void {
-              sendRoleplay({
-                name: rpCommand.name,
-                description: rpCommand.description,
-                response: response,
-                type: type,
-                links: rpCommand.links,
-              }, props, this.yua)
+              sendRoleplay(this, props, this.yua, type)
             }
           }
         )(this.yua),
@@ -138,27 +134,39 @@ class CommandHandler {
 
     return true
   }
-
-  public async sendRoleplay(rpCommand: RPCommand, props: CommandProps, yua: Yua): Promise<void> {
+  public async sendRoleplay(cmd: YuaRpCommand, props: CommandProps, yua: Yua, type: "self" | "towards" | "both"): Promise<void> {
     const {
       message,
       args,
       embed,
       quickEmbed,
     } = props
-    const self = (): void => {
+    const self = async (): Promise<void> => {
       try {
-        const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
+        const gif = cmd.json.links[Math.floor(Math.random() * cmd.json.links.length)]
         //console.log(gif)
-        let response = rpCommand.response
-        if (rpCommand.type === 3) {
-          response = response.split("|").filter(i => i.split("%s").length < 3)[0]
-        }
-        if (!response) {
-          quickEmbed(null, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
+        const response = yua.langHandler.tempGetValue(cmd.json['responses.self'])
+        const counter = yua.langHandler.tempGetValue(cmd.json['counters.self'])
+        if (!response || !counter) return somethingWrong()
 
-          return
+        let sender = await RoleplayCounter.findOne({ userId: message.author.id })
+        if (!sender) {
+          sender = await RoleplayCounter.create({
+            userId: message.author.id,
+            roleplay: {},
+          })
         }
+        if (!sender.roleplay) sender.roleplay = {}
+        if (!sender.roleplay[cmd.name]) {
+          sender.roleplay = Object.assign(sender.roleplay, {
+            [cmd.name]: {
+              sent: 0,
+              recieved: 0,
+              want: 0,
+            },
+          })
+        }
+        sender.roleplay[cmd.name].sent += 1
 
         embed({
           color: colors.default,
@@ -166,7 +174,12 @@ class CommandHandler {
           image: {
             url: gif,
           },
+          footer: {
+            text: `${counter.replace("%s", message.member.nick || message.member.username).replace("%s", sender.roleplay[cmd.name].sent.toString())}`,
+          },
         })
+
+        await sender.updateOne({ roleplay: sender.roleplay })
 
         return
       } catch (err) {}
@@ -174,60 +187,63 @@ class CommandHandler {
     }
     const towards = async (): Promise<void> => {
       try {
-        if (!args[0]) {
-          //quickEmbed(null, `**Sorry!** I need you to tell me who you want to ${rpCommand.name} first!`)
-          const sadCmd: RpCommandClass = yua.commandHandler.get("sad")
-
-          const gif = sadCmd.links[Math.floor(Math.random() * sadCmd.links.length)]
-
-          embed({
-            color: colors.default,
-            description: `**${message.member.nick || message.member.username}** wants a ${rpCommand.name}`,
-            image: {
-              url: gif,
-            },
-          })
-
-          return
-        }
+        if (!args[0]) return want()
         const user = await getUser()
         if (!user) throw "No User"
         args.shift()
 
         if (message.member.id === user.id) {
-          if (rpCommand.type === 3) {
+          if (type === 'both') {
             self()
 
             return
           }
-          const sadCmd: RpCommandClass = yua.commandHandler.get("sad")
 
-          const gif = sadCmd.links[Math.floor(Math.random() * sadCmd.links.length)]
+          return want()
+        }
 
-          embed({
-            color: colors.default,
-            description: `**${message.member.nick || message.member.username}** wants a ${rpCommand.name}`,
-            image: {
-              url: gif,
+        const gif = cmd.json.links[Math.floor(Math.random() * cmd.json.links.length)]
+        //console.log(gif)
+        const response = yua.langHandler.tempGetValue(cmd.json['responses.towards'])
+        const counter = yua.langHandler.tempGetValue(cmd.json['counters.towards'])
+        if (!response || !counter) return somethingWrong()
+
+        let sender = await RoleplayCounter.findOne({ userId: message.author.id })
+        let reciever = await RoleplayCounter.findOne({ userId: user.id })
+        if (!sender) {
+          sender = await RoleplayCounter.create({
+            userId: message.author.id,
+            roleplay: {},
+          })
+        }
+        if (!reciever) {
+          reciever = await RoleplayCounter.create({
+            userId: user.id,
+            roleplay: {},
+          })
+        }
+        if (!sender.roleplay) sender.roleplay = {}
+        if (!reciever.roleplay) reciever.roleplay = {}
+        if (!sender.roleplay[cmd.name]) {
+          sender.roleplay = Object.assign(sender.roleplay, {
+            [cmd.name]: {
+              sent: 0,
+              recieved: 0,
+              want: 0,
             },
           })
-
-          return
         }
-
-        const gif = rpCommand.links[Math.floor(Math.random() * rpCommand.links.length)]
-        //console.log(gif)
-        let response = rpCommand.response
-
-        if (rpCommand.type === 3) {
-          response = response.split("|").filter(i => i.split("%s").length > 2)[0]
+        if (!reciever.roleplay[cmd.name]) {
+          reciever.roleplay = Object.assign(reciever.roleplay, {
+            [cmd.name]: {
+              sent: 0,
+              recieved: 0,
+              want: 0,
+            },
+          })
         }
-
-        if (!response) {
-          quickEmbed(null, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
-
-          return
-        }
+        sender.roleplay[cmd.name].sent += 1
+        reciever.roleplay[cmd.name].recieved += 1
 
         embed({
           color: colors.default,
@@ -235,7 +251,17 @@ class CommandHandler {
           image: {
             url: gif,
           },
+          footer: {
+            text: `${counter
+              .replace("%s", user.nick || user.username)
+              .replace("%s", reciever.roleplay[cmd.name].recieved.toString())
+              .replace("%s", message.member.nick || message.member.username)
+              .replace("%s", sender.roleplay[cmd.name].sent.toString())}`,
+          },
         })
+
+        await sender.updateOne({ roleplay: sender.roleplay })
+        await reciever.updateOne({ roleplay: reciever.roleplay })
 
         return
       } catch (err) {
@@ -243,6 +269,63 @@ class CommandHandler {
 
         return
       }
+    }
+    const want = (): void => {
+      RoleplayCounter.findOne({ userId: message.author.id })
+        .then(async (doc) => {
+          if (!doc) {
+            doc = await RoleplayCounter.create({
+              userId: message.author.id,
+              roleplay: {},
+            })
+          }
+          if (!doc.roleplay) doc.roleplay = {}
+          if (!doc.roleplay[cmd.name]) {
+            doc.roleplay = Object.assign(doc.roleplay, {
+              [cmd.name]: {
+                sent: 0,
+                recieved: 0,
+                want: 0,
+              },
+            })
+          }
+          doc.roleplay[cmd.name].want += 1
+          const sadCmd: YuaRpCommand = yua.commandHandler.get("sad") as YuaRpCommand
+
+          const gif = sadCmd.json.links[Math.floor(Math.random() * sadCmd.json.links.length)]
+
+          const counter = yua.langHandler.tempGetValue(cmd.json['counters.want'])
+          const response = yua.langHandler.tempGetValue(cmd.json['responses.want'])
+          if (!counter || !response) return somethingWrong()
+          embed({
+            color: colors.default,
+            description: `${response.replace("%s", message.member.nick || message.member.username)}`,
+            image: {
+              url: gif,
+            },
+            footer: {
+              text: `${counter.replace("%s", message.member.nick || message.member.username).replace("%s", doc.roleplay[cmd.name].want.toString())}`,
+            },
+          })
+          await doc.updateOne({ roleplay: doc.roleplay })
+        })
+        .catch(() => {
+          const sadCmd: YuaRpCommand = yua.commandHandler.get("sad") as YuaRpCommand
+
+          const gif = sadCmd.json.links[Math.floor(Math.random() * sadCmd.json.links.length)]
+
+          const response = yua.langHandler.tempGetValue(cmd.json['responses.want'])
+          embed({
+            color: colors.default,
+            description: `${response.replace("%s", message.member.nick || message.member.username)}`,
+            image: {
+              url: gif,
+            },
+          })
+        })
+    }
+    const somethingWrong = (): void => {
+      quickEmbed(null, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
     }
     const getUser = async (): Promise<Member> => {
       try {
@@ -258,10 +341,12 @@ class CommandHandler {
           (await guild.fetchMembers({
             query: args[0],
             limit: 1,
-          }))[0] ||
-          (await guild.fetchMembers({
-            userIDs: [args[0]],
           }))[0]
+          if (!user && parseInt(args[0])) {
+            user = (await guild.fetchMembers({
+              userIDs: [],
+            }))[0]
+          }
         }
         if (!user) {
           return null
@@ -274,15 +359,14 @@ class CommandHandler {
         return null
       }
     }
-
-    switch(rpCommand.type) {
-    case 1:
+    switch(type) {
+    case 'self':
       self()
       break
-    case 2:
+    case 'towards':
       towards()
       break
-    case 3:
+    case 'both':
       const user = await getUser()
       if (user) towards()
       else self()

@@ -58,7 +58,7 @@ Last Heartbeat: ${new Date(lastHeartBeatSent).toLocaleTimeString()}
 
 Websocket:  ${wsLatency}ms
 Database:   ${databasePing}ms
-API:        ${mEdited.editedTimestamp - m.createdAt - 100}ms
+API:        ${mEdited.editedTimestamp - m.createdAt - 10}ms
 \`\`\``,
                 },
               })

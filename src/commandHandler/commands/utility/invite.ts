@@ -1,6 +1,9 @@
 import { BaseCommand } from '../../'
 import { CommandProps } from '../../../@types'
 import Yua from 'src/client'
+import {
+  inviteRedirect,
+} from '../../../config'
 
 class YuaCommand extends BaseCommand {
   private yua: Yua
@@ -21,7 +24,7 @@ class YuaCommand extends BaseCommand {
       send,
     } = props
 
-    send(`<3\nhttps://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua`)
+    send(`<3\nhttps://discord.com/oauth2/authorize?client_id=${this.yua.client.user.id}&scope=bot&permissions=8&redirect_uri=${inviteRedirect}`)
 
     return
   }

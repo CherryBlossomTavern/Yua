@@ -1,6 +1,14 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
   messageCreate,
 } from './events'
+import {
+  inviteRedirect,
+} from './config'
+import Eris from 'eris'
+const {
+  GatewayOPCodes,
+} = Eris.Constants
 
 export default (yua: import('./client')): void => {
   yua.console.info('Init Process Complete, Now Starting Event Listeners')
@@ -22,10 +30,29 @@ const yuaStatus = (yua: import('./client')): void => {
     guildCount = 0
     yua.ipc.broadcast('GET_GUILD_COUNT', { cluster: yua.clusterID })
     setTimeout(() => {
-      yua.client.editStatus('online', {
-        name: `y!help | ${guildCount} Guilds`,
-        type: 0,
-      })
+      updateStatus(yua, guildCount)
     }, 5000)
   }, 30000)
+}
+
+const updateStatus = (yua: import('./client'), guildCount: number): void => {
+  for (const [, shard] of yua.client.shards.entries()) {
+    shard.sendWS(GatewayOPCodes.STATUS_UPDATE, {
+      since: shard.presence.status === 'idle' ? Date.now() : 0,
+      status: 'online',
+      afk: false,
+      activities: [
+        {
+          name: `y!help | ${guildCount} Guilds`,
+          type: 0,
+          buttons: [
+            {
+              label: "Invite Me!",
+              url: `https://discord.com/oauth2/authorize?client_id=${yua.client.user.id}&scope=bot&permissions=8&redirect_uri=${inviteRedirect}`,
+            },
+          ],
+        },
+      ],
+    })
+  }
 }

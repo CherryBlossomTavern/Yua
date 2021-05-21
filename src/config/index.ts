@@ -34,3 +34,6 @@ export const defaultDevs: string[] = [
   "232597078650519553",
   "316669053957832706",
 ]
+
+export const inviteLink = "https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua"
+export const inviteRedirect = "https%3A%2F%2Fdiscord.gg%2Fyua"
