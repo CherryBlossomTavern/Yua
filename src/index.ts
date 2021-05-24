@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import dotenv from 'dotenv'
 dotenv.config()
 
@@ -31,6 +32,7 @@ import { Manager } from 'yuasharder'
     },
   })
 
+  // Temp listeners for logs
   manager.on('info', (info) => {
     console.custom('INFO', 'blue', info)
   })

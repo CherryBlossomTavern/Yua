@@ -114,8 +114,8 @@ class Yua extends Base {
     }
   }
 
+  // Core ipc events for yua
   private registerIPCEvents(): void {
-
     this.ipc.register("OWNER_GUILD_UPDATE", ({ msg }) => {
       this._ownerGuild = msg.guild
       //console.log("Recieved Owner Guild Update")
@@ -131,7 +131,6 @@ class Yua extends Base {
     this.ipc.register("FORCE_OWNER_GUILD_UPDATE", () => {
       this.updateOwnerGuildInDatabaseAndIPC()
     })
-
   }
   /**
    * Get Fresh Config Copy From Database
@@ -154,7 +153,7 @@ class Yua extends Base {
     })
   }
 
-  //\\//\\ Fetching Owner Guild Stuff //\\//\\
+  //\\//\\ Fetching Owner Guild //\\//\\
 
   private attemptFetchOwnerGuild(): void {
     if (this.fetchOwnerGuild) {

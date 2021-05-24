@@ -51,27 +51,42 @@ class CommandHandler {
   get categories(): string[] {
     return [...new Set(this.commandsArray.map(c => c.extra.category))].sort()
   }
+  /**
+   * Add command
+   */
   public add(command: BaseCommand): void {
     if (!this._commands.get(command.name)) {
       this._commands.set(command.name, command)
       this.yua.console.debug(`Registered Command: ${command.name}`)
     }
   }
+  /**
+   * Remove command
+   */
   public remove(command: string | BaseCommand): void {
     const name = typeof command === 'string' ? command : command.name
     this._commands.delete(name)
     this.yua.console.debug(`Unregistered Command: ${typeof command === 'string' ? command : command.name}`)
   }
+  /**
+   * Get command
+   */
   public get(command: string | BaseCommand): BaseCommand {
     const name = typeof command === 'string' ? command : command.name
 
     return this._commands.get(name) || null
   }
+  /**
+   * Get command by alias or name
+   */
   public getByAlias(command: string): BaseCommand {
     const cmd = Array.from(this.filter((c) => c.name === command || c.extra.aliases.includes(command)).values())
     if (cmd[0]) return cmd[0]
     else return null
   }
+  /**
+   * Filter commands
+   */
   public filter(filter: (val: BaseCommand) => boolean): Map<string, BaseCommand> {
     const results = new Map()
     for (const [k, v] of this._commands.entries()) {
@@ -82,6 +97,9 @@ class CommandHandler {
     
     return results
   }
+  /**
+   * Parses command directory and registers all commands
+   */
   public async autoRegisterAll(): Promise<boolean> {
     readdirSync(path.resolve(__dirname, './commands')).forEach(async dir => {
       const commandFiles = readdirSync(path.resolve(__dirname, `./commands/${dir}/`)).filter(file => file.endsWith(`${process.env.NODE_ENV === 'production' ? ".js" : ".ts"}`))
@@ -102,6 +120,9 @@ class CommandHandler {
 
     return true
   }
+  /**
+   * Parses roleplay submodule directory and registers all commands
+   */
   public async registerRolePlay(): Promise<boolean> {
     const commandFiles = readdirSync(path.resolve(__dirname, '../../submodules/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
     for (const command of commandFiles) {
@@ -134,6 +155,9 @@ class CommandHandler {
 
     return true
   }
+  /**
+   * Sends roleplay response
+   */
   public async sendRoleplay(cmd: YuaRpCommand, props: CommandProps, yua: Yua, type: "self" | "towards" | "both"): Promise<void> {
     const {
       message,
@@ -373,6 +397,9 @@ class CommandHandler {
       break
     }
   }
+  /**
+   * Parses message for command
+   */
   public async parseCommand(message: Message): Promise<void> {
     const {
       author,
@@ -381,7 +408,7 @@ class CommandHandler {
     let { content } = message
 
     if (author.bot) return
-    if (message.channel.type === 1) return
+    if (message.channel.type !== 0) return
 
     content = content.replace(/<YUA_BOT_MENTION>/, "") // Probability of this happenening is small but probably should just in case
     const args = content.split(" ")
