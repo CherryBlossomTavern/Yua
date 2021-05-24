@@ -209,7 +209,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
           this._queue.shift()
           this._start()
         } else {
-          msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)//.catch()
+          msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {})
         }
       }
     }
