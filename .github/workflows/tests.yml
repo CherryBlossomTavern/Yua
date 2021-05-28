@@ -3,9 +3,9 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ['14', '15']
+    # strategy:
+    #   matrix:
+    #     node: ['14', '15']
     name: Tests
     steps:
       - name: Checkout Repository
@@ -14,7 +14,7 @@ jobs:
       - name: Install Node
         uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 14
       
       - name: Pre Ci
         run: yarn run preci
