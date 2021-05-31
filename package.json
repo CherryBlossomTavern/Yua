@@ -4,14 +4,16 @@
   "description": "Yua bot OWO",
   "main": "dist/index.js",
   "engines": {
-    "node": ">=14.0.0 <=14.15.4"
+    "node": ">=14.0.0 <=15.0.0"
   },
   "engineStrict": true,
   "scripts": {
     "build": "tsc",
+    "ci": "yarn install --frozen-lockfile",
     "dev": "nodemon --config nodemon.json src/index.ts",
     "lint": "eslint src/**",
     "lint:fix": "eslint src/** --fix",
+    "preci": "rm -fr node_modules",
     "precommit": "echo 'pre-commit running linter....' && exit 0",
     "start": "cross-env NODE_ENV=production node dist/index.js"
   },
@@ -38,7 +40,6 @@
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
     "eris": "^0.14.1",
-    "git-clone": "^0.1.0",
     "moment": "^2.29.1",
     "mongoose": "^5.12.4",
     "request": "^2.88.2",

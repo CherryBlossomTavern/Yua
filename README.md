@@ -48,7 +48,7 @@ Every time you create a pull request make sure to bump the version in `package.j
 
 If the Yua repo is ahead in commits then yours. A.K.A Yua repo has been updated and you don't have the most recent code run.
 ```git
-git clone https://github.com/CherryBlossomTavern/Yua
+git clone --recurse-submodules --remote-submodules https://github.com/CherryBlossomTavern/Yua.git
 ```
 
 ## Versioning

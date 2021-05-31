@@ -1,0 +1,8 @@
+version: 2
+updates:
+- package-ecosystem: yarn
+  directory: "/"
+  scedule:
+    interval: daily
+    time: "17:00"
+    timezone: America/Chicago
