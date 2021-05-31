@@ -181,6 +181,11 @@ class YuaCommand extends BaseCommand {
                 value: `\`${command.extra.category}\``,
                 inline: true,
               },
+              {
+                name: "Permissions",
+                value: `${command.extra.permissions[0] ? `\`${command.extra.permissions.join("`, `")}\`` : "No Permission Needed"}`,
+                inline: true,
+              },
             ],
             // thumbnail: {
             //   url: this.yua.client.user.avatarURL,
