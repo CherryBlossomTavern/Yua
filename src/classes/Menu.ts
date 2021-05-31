@@ -79,6 +79,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
   private _channelId: string
   private _authorId: string
   private _queue: (MenuReactionQuestion | MenuResponseQuestion)[] = []
+  private _currentQuestionMessageId: string
   private _msgDelete: string[] = []
   private _purgeAllWhenDone = false
   public ended = false
@@ -94,14 +95,30 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     this._handleReaction = this._handleReaction.bind(this)
     this._handleChannelDeletion = this._handleChannelDeletion.bind(this)
     this._handleGuildDeletion = this._handleGuildDeletion.bind(this)
+    this._handleMessageDeletion = this._handleMessageDeletion.bind(this)
+    this._handleBulkMessageDeletion = this._handleBulkMessageDeletion.bind(this)
+    this._handleReactionDelete = this._handleReactionDelete.bind(this)
+    this._handleReactionDeleteAll = this._handleReactionDeleteAll.bind(this)
+    this._handleReactionDeleteEmoji = this._handleReactionDelete.bind(this)
 
     this.yua.client.on("channelDelete", this._handleChannelDeletion)
     this.yua.client.on("guildDelete", this._handleGuildDeletion)
+    this.yua.client.on("messageDelete", this._handleMessageDeletion)
+    this.yua.client.on("messageDeleteBulk", this._handleBulkMessageDeletion)
+    this.yua.client.on("messageReactionRemove", this._handleReactionDelete)
+    this.yua.client.on("messageReactionRemoveAll", this._handleReactionDeleteAll)
+    this.yua.client.on("messageReactionRemoveEmoji", this._handleReactionDeleteEmoji)
+
     this.once(Events.end, () => {
       this.yua.client.removeListener("messageCreate", this._handleResponse)
       this.yua.client.removeListener("messageReactionAdd", this._handleReaction)
       this.yua.client.removeListener("channelDelete", this._handleChannelDeletion)
       this.yua.client.removeListener("guildDelete", this._handleGuildDeletion)
+      this.yua.client.removeListener("messageDelete", this._handleMessageDeletion)
+      this.yua.client.removeListener("messageDeleteBulk", this._handleBulkMessageDeletion)
+      this.yua.client.removeListener("messageReactionRemove", this._handleReactionDelete)
+      this.yua.client.removeListener("messageReactionRemoveAll", this._handleReactionDeleteAll)
+      this.yua.client.removeListener("messageReactionRemoveEmoji", this._handleReactionDeleteEmoji)
       if (this._purgeAllWhenDone) {
         setTimeout(() => {
           try {
@@ -165,13 +182,17 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     const item = this._queue[0]
     if ("callback" in item) {
       this.yua.client.createMessage(this._channelId, item.content)
-        .then((m) => { this._msgDelete.push(m.id) })
+        .then((m) => {
+          this._msgDelete.push(m.id)
+          this._currentQuestionMessageId = m.id
+        })
     } else if ("reactions" in item) {
       this.yua.client.createMessage(this._channelId, item.content)
         .then((m) => {
           this._msgDelete.push(m.id)
+          this._currentQuestionMessageId = m.id
           for (const emoji of item.reactions) {
-            m.addReaction(`${emoji.name}:${emoji.id}`)
+            m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
               .then(() => {})
               .catch(() => {})
           }
@@ -212,6 +233,93 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
           msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {})
         }
       }
+    } else {
+      if (reactor.id !== this.yua.client.user.id) {
+        msg.removeReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`, reactor.id)
+      }
+    }
+  }
+  private _handleReactionDelete(message: Eris.Message, emoji: Eris.Emoji): void {
+    if (this._currentQuestionMessageId && this._currentQuestionMessageId === message.id) {
+      const item = this._queue[0]
+      if ("reactions" in item) {
+        const reactionIds = item.reactions.map(r => r.id)
+        if (reactionIds.includes(emoji.id)) {
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+        }
+      }
+    }
+  }
+  private _handleReactionDeleteEmoji(message: Eris.Message, emoji: Eris.Emoji): void {
+    if (this._currentQuestionMessageId && this._currentQuestionMessageId === message.id) {
+      const item = this._queue[0]
+      if ("reactions" in item) {
+        const reactionIds = item.reactions.map(r => r.id)
+        if (reactionIds.includes(emoji.id)) {
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+        }
+      }
+    }
+  }
+  private _handleReactionDeleteAll(message: Eris.Message): void {
+    if (this._currentQuestionMessageId && this._currentQuestionMessageId === message.id) {
+      const item = this._queue[0]
+      if ("reactions" in item) {
+        for (const emoji of item.reactions) {
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+            .then(() => {})
+            .catch(() => {})
+        }
+      }
+    }
+  }
+  private _handleMessageDeletion(msg: Eris.Message): void {
+    if (this._currentQuestionMessageId && this._currentQuestionMessageId === msg.id) {
+      const item = this._queue[0]
+      if ("callback" in item) {
+        this.yua.client.createMessage(this._channelId, item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+          })
+      } else if ("reactions" in item) {
+        this.yua.client.createMessage(this._channelId, item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+            for (const emoji of item.reactions) {
+              m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+                .then(() => {})
+                .catch(() => {})
+            }
+          })
+          .catch(() => {})
+      } else this.stop(EndReasons.error)
+    }
+  }
+  private _handleBulkMessageDeletion(msgs: Eris.Message[]): void {
+    const ids = msgs.map(m => m.id)
+    if (this._currentQuestionMessageId && ids.includes(this._currentQuestionMessageId)) {
+      const item = this._queue[0]
+      if ("callback" in item) {
+        this.yua.client.createMessage(this._channelId, item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+          })
+      } else if ("reactions" in item) {
+        this.yua.client.createMessage(this._channelId, item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+            for (const emoji of item.reactions) {
+              m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+                .then(() => {})
+                .catch(() => {})
+            }
+          })
+          .catch(() => {})
+      } else this.stop(EndReasons.error)
     }
   }
   private _handleChannelDeletion(channel: Eris.Channel): void {
