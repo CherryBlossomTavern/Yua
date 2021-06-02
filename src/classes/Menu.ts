@@ -2,6 +2,7 @@
 import { EventEmitter } from'events'
 import Yua from 'src/client'
 import Eris from 'eris'
+import { colors } from '../config'
 
 export interface MenuReactionQuestion {
   content: string | { embed: Eris.EmbedOptions }
@@ -10,7 +11,7 @@ export interface MenuReactionQuestion {
 
 export interface MenuResponseQuestion {
   content: string | { embed: Eris.EmbedOptions }
-  callback: (message: Eris.Message) => boolean
+  callback: (message: Eris.Message) => boolean | string
   invalidResponse?: string
 }
 
@@ -210,13 +211,29 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       }
       const item = this._queue[0]
       if ("callback" in item) {
-        if (item.callback(msg)) {
+        const cb = item.callback(msg)
+        if (typeof cb === 'boolean' && cb) {
           this.collected.push(msg)
           this._queue.shift()
           this._start()
         } else {
-          this.yua.client.createMessage(this._channelId, item.invalidResponse || "Invalid Response ;-; Please Try Again or Type `" + this._bailWord + "`")
-            .then((m) => { this._msgDelete.push(m.id) })
+          if (typeof cb === 'string') {
+            this.yua.client.createMessage(this._channelId, {
+              embed: {
+                color: colors.error,
+                description: cb,
+              },
+            })
+              .then((m) => { this._msgDelete.push(m.id) })
+          } else {
+            this.yua.client.createMessage(this._channelId, {
+              embed: {
+                color: colors.error,
+                description: item.invalidResponse || "Invalid Response ;-; Please Try Again or Type `" + this._bailWord + "`",
+              },
+            })
+              .then((m) => { this._msgDelete.push(m.id) })
+          }
         }
       }
     }

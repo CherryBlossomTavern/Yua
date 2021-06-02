@@ -183,7 +183,7 @@ class YuaCommand extends BaseCommand {
               },
               {
                 name: "Permissions",
-                value: `${command.extra.permissions[0] ? `\`${command.extra.permissions.join("`, `")}\`` : "No Permission Needed"}`,
+                value: `${command.extra.permissions && command.extra.permissions[0] ? `\`${command.extra.permissions.join("`, `")}\`` : "No Permission Needed"}`,
                 inline: true,
               },
             ],
