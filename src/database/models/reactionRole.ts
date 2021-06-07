@@ -11,7 +11,6 @@ interface reactionRole extends Document {
   messageId: string
   type: 'add' | 'unique' | 'remove' | 'binding' | 'limited'
   roles: Map<string, string> // EmojiId, RoleId
-  content: string
   limit: number
 }
 
@@ -21,7 +20,6 @@ const schema: Schema = new Schema({
   messageId: String,
   type: String,
   roles: Map,
-  content: String,
   limit: Number,
 }, { versionKey: false })
 

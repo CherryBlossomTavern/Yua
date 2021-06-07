@@ -476,6 +476,28 @@ class CommandHandler {
     }
 
     /**
+     * Helper function for creating messages in specift channels
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
+    const createMessage = (channel: string, content: string | { embed: EmbedOptions }): Promise<Message> => {
+      try {
+        const message = this.yua.client.createMessage(channel, content)
+        message.catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            this.yua.console.error("Caught Error: CommandProps.createMessage: This error will only show in NODE_ENV=development.\n", err)
+          }
+        })
+
+        return message
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          this.yua.console.error("Caught Error: CommandProps.createMessage: This error will only show in NODE_ENV=development.\n", err)
+        }
+      }
+    }
+
+    /**
      * Helper function to create embed message
      * 
      * Errors are caught and only thrown if NODE_ENV=development
@@ -538,7 +560,7 @@ class CommandHandler {
     const guildChannel = this.yua.client.guilds.get(guildID).channels.get(channel.id)
     const yuaMember = this.yua.client.guilds.get(guildID).members.get(this.yua.client.user.id)
 
-    if (!checkIfHasPerms(guildChannel, yuaMember, ['sendMessages'])) {
+    if (!checkIfHasPerms(guildChannel, yuaMember, ['sendMessages']).hasPerms) {
       try {
         (await message.author.getDMChannel()).createMessage("It appears I am missing the permission to send messages in **" + guild.name + "**.\nI cannot do anything without this permission, please consult someone who can change this!").catch((err) => {
           if (process.env.NODE_ENV === 'development') {
@@ -551,9 +573,10 @@ class CommandHandler {
         }
       }
       
+      return
     }
 
-    if (!checkIfHasPerms(guildChannel, yuaMember, ['embedLinks'])) {
+    if (!checkIfHasPerms(guildChannel, yuaMember, ['embedLinks']).hasPerms) {
       send("It appears I am missing the permission to embed links in either this channel or the entire server.\nPlease enable this permission as I rely on it heavily!")
 
       return
@@ -598,6 +621,8 @@ class CommandHandler {
         deleteMessage,
         guild,
         yuaMember,
+        guildChannel,
+        createMessage,
       }
 
       await command.execute(props)

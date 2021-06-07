@@ -64,6 +64,7 @@ export interface CommandProps {
   args: string[]
   guild: Eris.Guild
   yuaMember: Eris.Member
+  guildChannel: Eris.AnyGuildChannel
   /**
    * Helper function for creating messages
    * 
@@ -92,4 +93,10 @@ export interface CommandProps {
    * Errors are caught and only thrown if NODE_ENV=development
    */
   deleteMessage(reason?: string): void
+  /**
+   * Helper function for creating messages in specift channels
+   * 
+   * Errors are caught and only thrown if NODE_ENV=development
+   */
+  createMessage(channel: string, content: string | { embed: Eris.EmbedOptions }): Promise<Eris.Message>
 }

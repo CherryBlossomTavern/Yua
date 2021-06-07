@@ -6,7 +6,9 @@ import Yua from 'src/client'
 import {
   getEmbedJson,
 } from '../../../utils'
-
+import {
+  colors,
+} from '../../../config'
 class YuaCommand extends BaseCommand {
   private yua: Yua
   constructor(yua: Yua) {
@@ -29,13 +31,31 @@ class YuaCommand extends BaseCommand {
   public execute(props: CommandProps): void {
     const {
       send,
+      embed,
     } = props
 
-    getEmbedJson(props)
+    getEmbedJson(props.message, props.args.join(" "))
       .then((res) => {
         send(res as any)
       })
-      .catch(() => {})
+      .catch((err) => {
+        let error: string
+        if (err.failedToDownloadFile) {
+          error = "Failed to download file"
+        } else if (err.toolarge) {
+          error = "Embed total size must not exceed 6000 characters"
+        } else {
+          error = err.err
+        }
+        embed({
+          "color": colors.error,
+          "description": `\`\`\`${error}\`\`\``,
+          "title": "Error Occured When Trying To Create Embed",
+          "footer": {
+            "text": "Consider Using https://embedbuilder.yua.gg/ to make your embed!",
+          },
+        })
+      })
       
     return
   }

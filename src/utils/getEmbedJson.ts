@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import Eris from 'eris'
 import { CommandProps } from 'src/@types'
 import request from 'request'
@@ -10,43 +11,57 @@ export interface YuaEmbed {
   embed?: Eris.EmbedOptions
 }
 
-export const getEmbedJson = async (commandProps: CommandProps): Promise<YuaEmbed> => {
-  const {
-    args,
-    message,
-  } = commandProps
-
+export const getEmbedJson = async (message: Eris.Message, cleanContent: string): Promise<YuaEmbed> => {
   return new Promise((resolve, reject) => {
     try {
       if (message.attachments[0]) {
         request.get(message.attachments[0].url, (err, res) => {
           if (err) {
-            sendError(commandProps, "Failed To Download File")
-            reject("Failed")
+            reject({
+              failed: true,
+              toolarge: false,
+              invalid: false,
+              err,
+            })
           }
           try {
             if (new String(res.body).length > 6000) {
-              sendError(commandProps, "Total Embed Size Must Not Exceed 6000 Characters!")
-              reject("Failed")
+              reject({
+                failed: false,
+                toolarge: true,
+                invalid: false,
+              })
             }
             const emb = JSON.parse(res.body)
             resolve(emb)
           } catch (err) {
-            sendError(commandProps, err)
-            reject("Failed")
+            reject({
+              failed: false,
+              toolarge: false,
+              invalid: true,
+              err,
+            })
           }
         })
       } else {
-        const emb = JSON.parse(args.join(" "))
+        const emb = JSON.parse(cleanContent)
         resolve(emb)
       }
     } catch (err) {
-      sendError(commandProps, err)
-      reject("Failed")
+      reject({
+        failed: false,
+        toolarge: false,
+        invalid: true,
+        err,
+      })
     }
   })
 }
 
+/**
+ * Dont Use
+ * @deprecated
+ */
 const sendError = (props: CommandProps, err: unknown): void => {
   props.send({
     "embed": {

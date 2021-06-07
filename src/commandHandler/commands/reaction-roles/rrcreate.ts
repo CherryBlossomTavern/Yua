@@ -5,9 +5,11 @@ import Yua from 'src/client'
 import { Menu } from '../../../classes'
 import Eris from 'eris'
 import { ReactionRole } from '../../../database/models'
-
+import { colors } from '../../../config'
+import { getEmbedJson } from '../../../utils'
 class YuaCommand extends BaseCommand {
   private yua: Yua
+  private props: CommandProps
   constructor(yua: Yua) {
     super("rrcreate", {
       usage: "",
@@ -23,15 +25,17 @@ class YuaCommand extends BaseCommand {
         'embedLinks',
         'manageMessages',
         'addReactions',
+        'manageRoles',
       ],
       type: 'all',
     })
     this.yua = yua
   }
   public execute(props: CommandProps): void {
+    this.props = props
     const {
       message,
-    } = props
+    } = this.props
 
     const addEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620730044457'), // Add
       removeEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620440506399'), // Remove
@@ -96,19 +100,23 @@ class YuaCommand extends BaseCommand {
       ],
     })
     rr.once('end', (collected, reason) => {
-      if (this._handleCollectorEnd(reason, props)) {
+      if (this._handleCollectorEnd(reason)) {
         const type = emojiToType.get(collected[0].id)
         switch (type) {
         case 'add':
-          this._handleMenuTypeAdd(props)
+          this._handleMenuTypeAdd()
           break
         case 'remove':
+          this._handleMenuTypeRemove()
           break
         case 'binding':
+          this._handleMenuTypeBinding()
           break
         case 'limited':
+          this._handleMenuTypeLimited()
           break
         case 'unique':
+          this._handleMenuTypeUnique()
           break
         }
       }
@@ -118,7 +126,7 @@ class YuaCommand extends BaseCommand {
 
     return
   }
-  private _handleMenuTypeAdd(props: CommandProps): void {
+  private _handleMenuTypeAdd(): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -130,7 +138,9 @@ class YuaCommand extends BaseCommand {
           "description": "Okie! Now for the reaction role menu message. Please specify either normal content for me to say or create an embed using [my embed creator](https://embedbuilder.yua.gg/)\n\n*type `cancel` at any time to stop the reaction role creation process*",
         },
       },
-      callback: () => { return true },
+      callback: async (msg) => {
+        return this._menuContentLogic(msg)
+      },
     })
     menu.addResponseQuestion({
       content: {
@@ -151,57 +161,140 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        if (!msg.channelMentions[0]) return "That doesn't seem right. Please mention a channel like so: `#channel-name`"
-        const channel = props.guild.channels.get(msg.channelMentions[0])
-        if (!channel) return "I could not locate that channel. Do I have the correct permissions?"
-
-        const yuaPerms = props.checkIfHasPerms(channel, props.yuaMember, [
-          'readMessages',
-          'sendMessages',
-          'manageMessages',
-          'addReactions',
-        ])
-        if (!yuaPerms.hasPerms) {
-          if (yuaPerms.missingPerm !== 'sendMessages' && yuaPerms.missingPerm !== 'readMessages') {
-            return  `Sorry, it seems I don't have **${yuaPerms.missingPerm}** permission, I cannot do that!`
-          }
-        }
-        
-        return true
+        return this._validateChannel(msg)
       },
     })
 
-    menu.once('end', (collected, reason) => {
-      if (this._handleCollectorEnd(reason, props)) {
-        const args: string[][] = this._chunk(collected[1].content.split(" ")
-          .filter(args => args.length > 0), 2) as string[][]
+    menu.once('end', async (collected, reason) => {
+      if (this._handleCollectorEnd(reason)) {
+        const extracted = this._extractEmojiRolePairs(collected[1])
         const channel = collected[2].channelMentions[0]
-        const content = collected[0].content
-        const roles = new Map<string,string>() // Emoji, RoleId
-        for (const [emoji, role] of args) {
-          const roleId = role.replace("<@&", "").replace(">", "")
-          const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
-          roles.set(emojiId, roleId)
-        }
-        props.send(`Done`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let content: any = collected[0].content
+        try {
+          content = await getEmbedJson(collected[0], collected[0].content)
+        } catch {}
+
+        this.props.createMessage(channel, content)
+          .then((m) => {
+            //console.log(extracted.emojisToAddToEmbed)
+            for (const emoji of extracted.emojisToAddToEmbed) {
+              try {
+                m.addReaction(emoji).catch(() => { /* Do Nothing */ })
+              } catch (error) {
+                
+              }
+            }
+            ReactionRole.create({
+              guildId: this.props.guild.id,
+              channelId: channel,
+              messageId: m.id,
+              type: 'add',
+              roles: extracted.roles,
+              limit: 0,
+            })
+              .catch(() => {
+                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+              })
+          })
+          .catch(() => {
+            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+          })
+        this.props.deleteMessage()
       }
     })
 
-    menu.start(props.message)
+    menu.start(this.props.message)
+  }
+  private _handleMenuTypeRemove(): void {
+    
+  }
+  private _handleMenuTypeUnique(): void {
+    
+  }
+  private _handleMenuTypeBinding(): void {
+    
+  }
+  private _handleMenuTypeLimited(): void {
+    
+  }
 
-    props.deleteMessage()
+  private async _menuContentLogic(msg: Eris.Message): Promise<string | boolean> {
+    try {
+      await getEmbedJson(msg, msg.content)
+      
+      return Promise.resolve(true)
+    } catch (error) {
+      const err: { failed: boolean, toolarge: boolean, invalid: boolean, err: unknown } = error
+      if (err.toolarge) {
+        return "Embed is too large, it must not exceed 6000 character"
+      } else if (err.failed) {
+        return "Failed to download embed file"
+      } else {
+        return new Promise((res) => {
+          const uSure = new Menu<[Eris.Emoji]>(this.yua, {
+            collectorTimeout: 60000,
+            purgeAllWhenDone: true,
+          })
+          uSure.addReactionQuestion({
+            content: {
+              "embed": {
+                "color": 16761517,
+                "title": "Warning",
+                "description": "Are you sure your menu message is how you want it? I ran some tests on it and it does not appear to be a valid embed. If you choose to continue I will send the menu message as plain text instead of an embed.",
+              },
+            },
+            reactions: [
+              "👍",
+              "👎",
+            ],
+          })
+          uSure.once('end', (col, reason) => {
+            if (reason === 'finish') {
+              if (col[0].name === '👍') {
+                res(true)
+              } else {
+                res(`When attempting to parse your embed received the error\n\`\`\`${err.err}\`\`\`\nPlease send the fixed embed below: `)
+              }
+            } else {
+              res("Please send role menu message again")
+            }
+          })
+          uSure.start(this.props.message)
+        })
+      }
+    }
   }
-  private _handleMenuTypeRemove(props: CommandProps): void {
-    
+
+  private _extractEmojiRolePairs(msg: Eris.Message): { roles: Map<string, string>, emojisToAddToEmbed: string[] } {
+    const args: string[][] = this._chunk(msg.content.split(" ")
+      .filter(args => args.length > 0), 2) as string[][]
+    const roles = new Map<string,string>() // Emoji, RoleId
+    const emojisToAddToEmbed: string[] = []
+    for (const [emoji, role] of args) {
+      const roleId = role.replace("<@&", "").replace(">", "")
+      const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
+      roles.set(emojiId, roleId)
+      emojisToAddToEmbed.push(emoji.replace("<", "").replace(">", ""))
+    }
+
+    return {
+      roles,
+      emojisToAddToEmbed,
+    }
   }
-  private _handleMenuTypeUnique(props: CommandProps): void {
+
+  private _validateChannel(msg: Eris.Message): boolean | string {
+    if (!msg.channelMentions[0]) return "That doesn't seem right. Please mention a channel like so: `#channel-name`"
+    const channel = this.props.guild.channels.get(msg.channelMentions[0])
+    if (!channel) return "I could not locate that channel. Do I have the correct permissions?"
+
+    const yuaPerms = this.props.checkIfHasPerms(channel, this.props.yuaMember, this.extra.yuaPermissions)
+    if (!yuaPerms.hasPerms) {
+      return  `Sorry, it seems I don't have **${yuaPerms.missingPerm}** permission, I cannot use that channel!`
+    }
     
-  }
-  private _handleMenuTypeBinding(props: CommandProps): void {
-    
-  }
-  private _handleMenuTypeLimited(props: CommandProps): void {
-    
+    return true
   }
   private _emojiRoleLogic(msg: Eris.Message): boolean | string {
     const args: string[][] = this._chunk(msg.content.split(" ")
@@ -209,13 +302,16 @@ class YuaCommand extends BaseCommand {
         
     const guild = this.yua.client.guilds.get(msg.guildID)
 
-    const uniEmojiRegex = new RegExp(/\p{Extended_Pictographic}/, "u")
+    const uniEmojiRegex = new RegExp(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]|\p{Extended_Pictographic})/, "u")
     const discordEmojiRegex = new RegExp(/<(a|):.*:.*>/)
     const roleRegex = new RegExp(/<@&.*>/)
 
     const roles = new Map<string, string>() // Emoji, RoleId
 
     for (const [emoji, role] of args) {
+      // console.log(emoji)
+      // console.log(uniEmojiRegex.test(emoji))
+      // console.log(discordEmojiRegex.test(emoji))
       if (roles.size < 1) {
         if (!uniEmojiRegex.test(emoji) && !discordEmojiRegex.test(emoji)) return "Incorrectly formatted! Please follow this format: ```👍 @thumbsUpRole 👎 @thumbsDownRole ...```"
         else {
@@ -246,11 +342,12 @@ class YuaCommand extends BaseCommand {
 
     return true
   }
-  private _handleCollectorEnd(reason: string, props: CommandProps): boolean {
+  private _handleCollectorEnd(reason: string): boolean {
     const {
       send,
       deleteMessage,
-    } = props
+    } = this.props
+    //console.log("reason:",reason)
     switch (reason) {
     case 'cancel':
       send({

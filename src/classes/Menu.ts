@@ -6,12 +6,12 @@ import { colors } from '../config'
 
 export interface MenuReactionQuestion {
   content: string | { embed: Eris.EmbedOptions }
-  reactions: Eris.Emoji[]
+  reactions: (Eris.Emoji | string)[]
 }
 
 export interface MenuResponseQuestion {
   content: string | { embed: Eris.EmbedOptions }
-  callback?: (message: Eris.Message) => boolean | string
+  callback?: (message: Eris.Message) => (boolean | string) | Promise<boolean | string>
   /**
    * Return a string in callback
    * @deprecated
@@ -154,6 +154,12 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     return this
   }
 
+  public addMessageToPrune(id: string): this {
+    this._msgDelete.push(id)
+
+    return this
+  }
+
   public start(message: Eris.Message): this {
     this._guildId = message.guildID
     this._channelId = message.channel.id
@@ -193,27 +199,25 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     }
     this.resetTimer()
     const item = this._queue[0]
-    if ("callback" in item) {
-      this.send(item.content)
-        .then((m) => {
-          this._msgDelete.push(m.id)
-          this._currentQuestionMessageId = m.id
-        })
-    } else if ("reactions" in item) {
+    if ("reactions" in item) {
       this.send(item.content)
         .then((m) => {
           this._msgDelete.push(m.id)
           this._currentQuestionMessageId = m.id
           for (const emoji of item.reactions) {
-            m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-              .catch(() => {
-                this.stop(EndReasons.error)
-              })
+            m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+              .catch(() => { /* Do Nothing */ })
           }
         })
-    } else this.stop(EndReasons.error)
+    } else {
+      this.send(item.content)
+        .then((m) => {
+          this._msgDelete.push(m.id)
+          this._currentQuestionMessageId = m.id
+        })
+    }
   }
-  private _handleResponse(msg: Eris.Message): void {
+  private async _handleResponse(msg: Eris.Message): Promise<void> {
     if (msg.channel.id === this._channelId && msg.author.id === this._authorId) {
       this._msgDelete.push(msg.id)
       if (msg.content.toLowerCase() === this._bailWord) {
@@ -223,7 +227,8 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       }
       const item = this._queue[0]
       if ("callback" in item) {
-        const cb = item.callback(msg)
+        const cb = await item.callback(msg)
+        //console.log(cb)
         if (typeof cb === 'boolean' && cb) {
           this.collected.push(msg)
           this._queue.shift()
@@ -258,17 +263,22 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (msg.channel.id === this._channelId && reactor.id === this._authorId) {
       const item = this._queue[0]
       if ("reactions" in item) {
-        if (item.reactions.map(r => r.id).includes(emoji.id)) {
+        const reactionNames: string[] = []
+        for (const r of item.reactions) {
+          if (typeof r === 'string') reactionNames.push(r)
+          else reactionNames.push(r.name)
+        }
+        if (reactionNames.includes(emoji.name)) {
           this.collected.push(emoji)
           this._queue.shift()
           this._start()
         } else {
-          msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => { /* Do Nothing */ })
+          msg.removeReactionEmoji(emoji.id ? `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}` : emoji.name).catch(() => { /* Do Nothing */ })
         }
       }
     } else {
       if (reactor.id !== this.yua.client.user.id) {
-        msg.removeReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`, reactor.id).catch(() => { /* Do Nothing */ })
+        msg.removeReaction(emoji.id ? `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}` : emoji.name, reactor.id).catch(() => { /* Do Nothing */ })
       }
     }
   }
@@ -276,11 +286,13 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (this._currentQuestionMessageId && this._currentQuestionMessageId === message.id) {
       const item = this._queue[0]
       if ("reactions" in item) {
-        const reactionIds = item.reactions.map(r => r.id)
-        if (reactionIds.includes(emoji.id)) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
-            this.stop(EndReasons.error)
-          })
+        const reactionNames: string[] = []
+        for (const r of item.reactions) {
+          if (typeof r === 'string') reactionNames.push(r)
+          else reactionNames.push(r.name)
+        }
+        if (reactionNames.includes(emoji.name)) {
+          message.addReaction(emoji.id ? `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}` : emoji.name).catch(() => { /* Do Nothing */ })
         }
       }
     }
@@ -289,11 +301,13 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (this._currentQuestionMessageId && this._currentQuestionMessageId === message.id) {
       const item = this._queue[0]
       if ("reactions" in item) {
-        const reactionIds = item.reactions.map(r => r.id)
-        if (reactionIds.includes(emoji.id)) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
-            this.stop(EndReasons.error)
-          })
+        const reactionNames: string[] = []
+        for (const r of item.reactions) {
+          if (typeof r === 'string') reactionNames.push(r)
+          else reactionNames.push(r.name)
+        }
+        if (reactionNames.includes(emoji.name)) {
+          message.addReaction(emoji.id ? `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}` : emoji.name).catch(() => { /* Do Nothing */ })
         }
       }
     }
@@ -303,9 +317,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       const item = this._queue[0]
       if ("reactions" in item) {
         for (const emoji of item.reactions) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
-            this.stop(EndReasons.error)
-          })
+          message.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => { /* Do Nothing */ })
         }
       }
     }
@@ -313,50 +325,46 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
   private _handleMessageDeletion(msg: Eris.Message): void {
     if (this._currentQuestionMessageId && this._currentQuestionMessageId === msg.id) {
       const item = this._queue[0]
-      if ("callback" in item) {
-        this.send(item.content)
-          .then((m) => {
-            this._msgDelete.push(m.id)
-            this._currentQuestionMessageId = m.id
-          })
-      } else if ("reactions" in item) {
+      if ("reactions" in item) {
         this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
-              m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-                .catch(() => {
-                  this.stop(EndReasons.error)
-                })
+              m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+                .catch(() => { /* Do Nothing */ })
             }
           })
-      } else this.stop(EndReasons.error)
+      } else {
+        this.send(item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+          })
+      }
     }
   }
   private _handleBulkMessageDeletion(msgs: Eris.Message[]): void {
     const ids = msgs.map(m => m.id)
     if (this._currentQuestionMessageId && ids.includes(this._currentQuestionMessageId)) {
       const item = this._queue[0]
-      if ("callback" in item) {
-        this.send(item.content)
-          .then((m) => {
-            this._msgDelete.push(m.id)
-            this._currentQuestionMessageId = m.id
-          })
-      } else if ("reactions" in item) {
+      if ("reactions" in item) {
         this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
-              m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-                .catch(() => {
-                  this.stop(EndReasons.error)
-                })
+              m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+                .catch(() => { /* Do Nothing */ })
             }
           })
-      } else this.stop(EndReasons.error)
+      } else {
+        this.send(item.content)
+          .then((m) => {
+            this._msgDelete.push(m.id)
+            this._currentQuestionMessageId = m.id
+          })
+      }
     }
   }
   private _handleChannelDeletion(channel: Eris.Channel): void {
