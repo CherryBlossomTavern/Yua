@@ -14,10 +14,17 @@ class YuaCommand extends BaseCommand {
       description: "Create a new reaction role menu with my step by step setup!\nUse https://embedbuilder.yua.gg/ to create your embed!",
       category: "reaction-roles",
       aliases: [],
-      permissions: [
+      userPermissions: [
         'manageRoles',
       ],
-      type: 'all', // Not Yet Implemented
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+        'manageMessages',
+        'addReactions',
+      ],
+      type: 'all',
     })
     this.yua = yua
   }
@@ -112,7 +119,7 @@ class YuaCommand extends BaseCommand {
     return
   }
   private _handleMenuTypeAdd(props: CommandProps): void {
-    const menu = new Menu<[Eris.Message, Eris.Message]>(this.yua, {
+    const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
     })
@@ -136,24 +143,53 @@ class YuaCommand extends BaseCommand {
         return this._emojiRoleLogic(msg)
       },
     })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Yay, you are almost there! The last thing I need to know is where you would like me to put the menu.\n\nPlease mention a channel like so: `#channel-name`",
+        },
+      },
+      callback: (msg) => {
+        if (!msg.channelMentions[0]) return "That doesn't seem right. Please mention a channel like so: `#channel-name`"
+        const channel = props.guild.channels.get(msg.channelMentions[0])
+        if (!channel) return "I could not locate that channel. Do I have the correct permissions?"
+
+        const yuaPerms = props.checkIfHasPerms(channel, props.yuaMember, [
+          'readMessages',
+          'sendMessages',
+          'manageMessages',
+          'addReactions',
+        ])
+        if (!yuaPerms.hasPerms) {
+          if (yuaPerms.missingPerm !== 'sendMessages' && yuaPerms.missingPerm !== 'readMessages') {
+            return  `Sorry, it seems I don't have **${yuaPerms.missingPerm}** permission, I cannot do that!`
+          }
+        }
+        
+        return true
+      },
+    })
 
     menu.once('end', (collected, reason) => {
       if (this._handleCollectorEnd(reason, props)) {
         const args: string[][] = this._chunk(collected[1].content.split(" ")
           .filter(args => args.length > 0), 2) as string[][]
-        let roles = "" // Emoji, RoleId
+        const channel = collected[2].channelMentions[0]
+        const content = collected[0].content
+        const roles = new Map<string,string>() // Emoji, RoleId
         for (const [emoji, role] of args) {
-          // const roleId = role.replace("<@&", "").replace(">", "")
-          // const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
-          roles += `\n${emoji}: ${role}`
+          const roleId = role.replace("<@&", "").replace(">", "")
+          const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
+          roles.set(emojiId, roleId)
         }
-        props.message.channel.createMessage(`Collected:\n\`type\`: *add*\n\`message\`: \`\`\`${collected[0].content}\`\`\`\n\`roles\`: ${roles}`)
+        props.send(`Done`)
       }
     })
 
     menu.start(props.message)
 
-    props.message.delete().catch(() => {})
+    props.deleteMessage()
   }
   private _handleMenuTypeRemove(props: CommandProps): void {
     
@@ -211,19 +247,23 @@ class YuaCommand extends BaseCommand {
     return true
   }
   private _handleCollectorEnd(reason: string, props: CommandProps): boolean {
-    const { message } = props
+    const {
+      send,
+      deleteMessage,
+    } = props
     switch (reason) {
     case 'cancel':
-      message.channel.createMessage({
+      send({
         embed: {
           "color": 16756141, 
           "description": "Reaction Role Creation Cancelled!",
         },
       })
+      deleteMessage()
 
       return false
     case 'error':
-      message.channel.createMessage({
+      send({
         embed: {
           "color": 16756141, 
           "description": "Reaction Role Creation Exited With Error!",
@@ -232,7 +272,7 @@ class YuaCommand extends BaseCommand {
 
       return false
     case 'timedOut':
-      message.channel.createMessage({
+      send({
         embed: {
           "color": 16756141, 
           "description": "Reaction Role Creation Timed Out!",

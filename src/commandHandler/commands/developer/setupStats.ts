@@ -12,16 +12,20 @@ class YuaCommand extends BaseCommand {
       description: "Setup Yua Master Stats",
       category: "developer",
       aliases: [],
-      permissions: [],
       type: 'all', // Not Yet Implemented
       devOnly: true,
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }
   public execute(props: CommandProps): void {
     const {
       embed,
-      message,
+      deleteMessage,
     } = props
     embed({
       color: colors.info,
@@ -36,7 +40,7 @@ class YuaCommand extends BaseCommand {
       })
     })
     setTimeout(() => {
-      message.delete().catch()
+      deleteMessage()
     }, 1000)
   }
 }

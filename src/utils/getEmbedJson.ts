@@ -21,18 +21,18 @@ export const getEmbedJson = async (commandProps: CommandProps): Promise<YuaEmbed
       if (message.attachments[0]) {
         request.get(message.attachments[0].url, (err, res) => {
           if (err) {
-            sendError(message, "Failed To Download File")
+            sendError(commandProps, "Failed To Download File")
             reject("Failed")
           }
           try {
             if (new String(res.body).length > 6000) {
-              sendError(message, "Total Embed Size Must Not Exceed 6000 Characters!")
+              sendError(commandProps, "Total Embed Size Must Not Exceed 6000 Characters!")
               reject("Failed")
             }
             const emb = JSON.parse(res.body)
             resolve(emb)
           } catch (err) {
-            sendError(message, err)
+            sendError(commandProps, err)
             reject("Failed")
           }
         })
@@ -41,14 +41,14 @@ export const getEmbedJson = async (commandProps: CommandProps): Promise<YuaEmbed
         resolve(emb)
       }
     } catch (err) {
-      sendError(message, err)
+      sendError(commandProps, err)
       reject("Failed")
     }
   })
 }
 
-const sendError = (msg: Eris.Message, err: unknown): void => {
-  msg.channel.createMessage({
+const sendError = (props: CommandProps, err: unknown): void => {
+  props.send({
     "embed": {
       "color": colors.error,
       "description": `\`\`\`${err}\`\`\``,

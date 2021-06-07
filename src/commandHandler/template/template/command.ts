@@ -10,7 +10,8 @@ class YuaCommand extends BaseCommand {
       description: "",
       category: "",
       aliases: [],
-      permissions: [],
+      userPermissions: [],
+      yuaPermissions: [],
       type: 'all', // Not Yet Implemented
     })
     this.yua = yua

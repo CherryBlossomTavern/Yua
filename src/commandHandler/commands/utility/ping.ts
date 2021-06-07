@@ -11,12 +11,18 @@ class YuaCommand extends BaseCommand {
       description: "Ping my database and connections with Discord to return live latency stats!",
       category: "utility",
       aliases: ["pong"],
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }
   public async execute(props: CommandProps): Promise<void> {
     const {
       message,
+      send,
     } = props
 
     const clusterID = this.yua.clusterID
@@ -27,7 +33,7 @@ class YuaCommand extends BaseCommand {
     const status = shard.status
     const databasePing = await this.getDatabasePing()
 
-    message.channel.createMessage({
+    send({
       embed: {
         color: colors.info,
         description: "Pinging...",

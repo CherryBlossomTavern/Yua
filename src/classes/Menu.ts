@@ -11,7 +11,11 @@ export interface MenuReactionQuestion {
 
 export interface MenuResponseQuestion {
   content: string | { embed: Eris.EmbedOptions }
-  callback: (message: Eris.Message) => boolean | string
+  callback?: (message: Eris.Message) => boolean | string
+  /**
+   * Return a string in callback
+   * @deprecated
+   */
   invalidResponse?: string
 }
 
@@ -123,8 +127,16 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if (this._purgeAllWhenDone) {
         setTimeout(() => {
           try {
-            this.yua.client.deleteMessages(this._channelId, this._msgDelete, "Reaction Role Menu Creation Cleanup")
-          } catch (err) {}
+            this.yua.client.deleteMessages(this._channelId, this._msgDelete, "Reaction Role Menu Creation Cleanup").catch((err) => {
+              if (process.env.NODE_ENV === 'development') {
+                this.yua.console.error("Caught Error: Menu.bulkDelete: This error will only show in NODE_ENV=development.\n", err)
+              }
+            })
+          } catch (err) {
+            if (process.env.NODE_ENV === 'development') {
+              this.yua.console.error("Caught Error: Menu.bulkDelete: This error will only show in NODE_ENV=development.\n", err)
+            }
+          }
         }, 3000)
       }
     })
@@ -154,14 +166,14 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
 
     return this
   }
-  public stop(reason: string): this {
+  public stop(reason: "guildDelete" | "channelDelete" | "cancel" | "error" | "finish" | "timedOut"): this {
     if (this.ended) return
     if (this._timeout) {
       clearTimeout(this._timeout)
       this._timeout = null
     }
     this.ended = true
-    this.emit('end', this.collected, reason as "guildDelete" | "channelDelete" | "cancel" | "error" | "finish" | "timedOut")
+    this.emit('end', this.collected, reason)
 
     return this
   }
@@ -182,23 +194,23 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     this.resetTimer()
     const item = this._queue[0]
     if ("callback" in item) {
-      this.yua.client.createMessage(this._channelId, item.content)
+      this.send(item.content)
         .then((m) => {
           this._msgDelete.push(m.id)
           this._currentQuestionMessageId = m.id
         })
     } else if ("reactions" in item) {
-      this.yua.client.createMessage(this._channelId, item.content)
+      this.send(item.content)
         .then((m) => {
           this._msgDelete.push(m.id)
           this._currentQuestionMessageId = m.id
           for (const emoji of item.reactions) {
             m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-              .then(() => {})
-              .catch(() => {})
+              .catch(() => {
+                this.stop(EndReasons.error)
+              })
           }
         })
-        .catch(() => {})
     } else this.stop(EndReasons.error)
   }
   private _handleResponse(msg: Eris.Message): void {
@@ -218,7 +230,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
           this._start()
         } else {
           if (typeof cb === 'string') {
-            this.yua.client.createMessage(this._channelId, {
+            this.send({
               embed: {
                 color: colors.error,
                 description: cb,
@@ -226,7 +238,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
             })
               .then((m) => { this._msgDelete.push(m.id) })
           } else {
-            this.yua.client.createMessage(this._channelId, {
+            this.send({
               embed: {
                 color: colors.error,
                 description: item.invalidResponse || "Invalid Response ;-; Please Try Again or Type `" + this._bailWord + "`",
@@ -235,6 +247,10 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
               .then((m) => { this._msgDelete.push(m.id) })
           }
         }
+      } else {
+        this.collected.push(msg)
+        this._queue.shift()
+        this._start()
       }
     }
   }
@@ -247,12 +263,12 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
           this._queue.shift()
           this._start()
         } else {
-          msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {})
+          msg.removeReactionEmoji(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => { /* Do Nothing */ })
         }
       }
     } else {
       if (reactor.id !== this.yua.client.user.id) {
-        msg.removeReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`, reactor.id)
+        msg.removeReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`, reactor.id).catch(() => { /* Do Nothing */ })
       }
     }
   }
@@ -262,7 +278,9 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if ("reactions" in item) {
         const reactionIds = item.reactions.map(r => r.id)
         if (reactionIds.includes(emoji.id)) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
+            this.stop(EndReasons.error)
+          })
         }
       }
     }
@@ -273,7 +291,9 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if ("reactions" in item) {
         const reactionIds = item.reactions.map(r => r.id)
         if (reactionIds.includes(emoji.id)) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
+            this.stop(EndReasons.error)
+          })
         }
       }
     }
@@ -283,9 +303,9 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       const item = this._queue[0]
       if ("reactions" in item) {
         for (const emoji of item.reactions) {
-          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-            .then(() => {})
-            .catch(() => {})
+          message.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`).catch(() => {
+            this.stop(EndReasons.error)
+          })
         }
       }
     }
@@ -294,23 +314,23 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (this._currentQuestionMessageId && this._currentQuestionMessageId === msg.id) {
       const item = this._queue[0]
       if ("callback" in item) {
-        this.yua.client.createMessage(this._channelId, item.content)
+        this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
           })
       } else if ("reactions" in item) {
-        this.yua.client.createMessage(this._channelId, item.content)
+        this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
               m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-                .then(() => {})
-                .catch(() => {})
+                .catch(() => {
+                  this.stop(EndReasons.error)
+                })
             }
           })
-          .catch(() => {})
       } else this.stop(EndReasons.error)
     }
   }
@@ -319,23 +339,23 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (this._currentQuestionMessageId && ids.includes(this._currentQuestionMessageId)) {
       const item = this._queue[0]
       if ("callback" in item) {
-        this.yua.client.createMessage(this._channelId, item.content)
+        this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
           })
       } else if ("reactions" in item) {
-        this.yua.client.createMessage(this._channelId, item.content)
+        this.send(item.content)
           .then((m) => {
             this._msgDelete.push(m.id)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
               m.addReaction(`${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
-                .then(() => {})
-                .catch(() => {})
+                .catch(() => {
+                  this.stop(EndReasons.error)
+                })
             }
           })
-          .catch(() => {})
       } else this.stop(EndReasons.error)
     }
   }
@@ -348,6 +368,22 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if (guild.id === this._guildId) {
       this.stop(EndReasons.guildDelete)
     }
+  }
+  /**
+   * Helper function for creating messages
+   * 
+   * Errors are caught and only thrown if NODE_ENV=development
+   */
+  private send(content: string | { embed: Eris.EmbedOptions }): Promise<Eris.Message> {
+    const message = this.yua.client.createMessage(this._channelId, content)
+    message.catch((err) => {
+      if (process.env.NODE_ENV === 'development') {
+        this.yua.console.error("Caught Error: Menu.send: This error will only show in NODE_ENV=development.\n", err)
+      }
+      this.stop(EndReasons.error)
+    })
+    
+    return message
   }
 }
 

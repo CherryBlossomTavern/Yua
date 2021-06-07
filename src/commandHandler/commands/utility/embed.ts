@@ -11,12 +11,17 @@ class YuaCommand extends BaseCommand {
   private yua: Yua
   constructor(yua: Yua) {
     super("embed", {
-      usage: "",
+      usage: "<JSON>",
       description: "Send an embedded message. Use https://embedbuilder.yua.gg/ to make your message!",
       category: "utility",
       aliases: [],
-      permissions: [
+      userPermissions: [
         "manageMessages",
+      ],
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
       ],
     })
     this.yua = yua
@@ -25,7 +30,7 @@ class YuaCommand extends BaseCommand {
     const {
       send,
     } = props
-    
+
     getEmbedJson(props)
       .then((res) => {
         send(res as any)

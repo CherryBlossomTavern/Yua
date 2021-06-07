@@ -20,6 +20,11 @@ class YuaCommand extends BaseCommand {
         "commands",
         "yuafordummies",
       ],
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }
@@ -182,8 +187,13 @@ class YuaCommand extends BaseCommand {
                 inline: true,
               },
               {
-                name: "Permissions",
-                value: `${command.extra.permissions && command.extra.permissions[0] ? `\`${command.extra.permissions.join("`, `")}\`` : "No Permission Needed"}`,
+                name: "Permissions You Need",
+                value: `${command.extra.userPermissions && command.extra.userPermissions[0] ? `\`${command.extra.userPermissions.join("`, `")}\`` : "No Permission Needed"}`,
+                inline: true,
+              },
+              {
+                name: "Permissions I Need",
+                value: `${command.extra.yuaPermissions && command.extra.yuaPermissions[0] ? `\`${command.extra.yuaPermissions.join("`, `")}\`` : "No Permission Needed"}`,
                 inline: true,
               },
             ],
