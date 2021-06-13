@@ -16,15 +16,20 @@ class YuaCommand extends BaseCommand {
         'link',
         'join',
       ],
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }
   public execute(props: CommandProps): void {
     const {
-      send,
+      quickEmbed,
     } = props
 
-    send(`<3\nhttps://discord.com/oauth2/authorize?client_id=${this.yua.client.user.id}&scope=bot&permissions=8&redirect_uri=${inviteRedirect}`)
+    quickEmbed(undefined, `Thankyou for considering me and requesting to invite me to join you on your adventures!\nYou can invite me with this [link](https://discord.com/oauth2/authorize?client_id=${this.yua.client.user.id}&scope=bot&permissions=8&redirect_uri=${inviteRedirect})`)
 
     return
   }

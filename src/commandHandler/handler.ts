@@ -19,7 +19,10 @@ import path from 'path'
 import { readdirSync } from 'fs'
 import { BaseCommand } from './'
 import Yua from 'src/client'
-import { CommandProps } from '../@types'
+import {
+  CommandProps,
+  ErisPermissions, 
+} from '../@types'
 import Template from './template/template/command'
 
 interface RPCommandJson {
@@ -51,27 +54,42 @@ class CommandHandler {
   get categories(): string[] {
     return [...new Set(this.commandsArray.map(c => c.extra.category))].sort()
   }
+  /**
+   * Add command
+   */
   public add(command: BaseCommand): void {
     if (!this._commands.get(command.name)) {
       this._commands.set(command.name, command)
       this.yua.console.debug(`Registered Command: ${command.name}`)
     }
   }
+  /**
+   * Remove command
+   */
   public remove(command: string | BaseCommand): void {
     const name = typeof command === 'string' ? command : command.name
     this._commands.delete(name)
     this.yua.console.debug(`Unregistered Command: ${typeof command === 'string' ? command : command.name}`)
   }
+  /**
+   * Get command
+   */
   public get(command: string | BaseCommand): BaseCommand {
     const name = typeof command === 'string' ? command : command.name
 
     return this._commands.get(name) || null
   }
+  /**
+   * Get command by alias or name
+   */
   public getByAlias(command: string): BaseCommand {
     const cmd = Array.from(this.filter((c) => c.name === command || c.extra.aliases.includes(command)).values())
     if (cmd[0]) return cmd[0]
     else return null
   }
+  /**
+   * Filter commands
+   */
   public filter(filter: (val: BaseCommand) => boolean): Map<string, BaseCommand> {
     const results = new Map()
     for (const [k, v] of this._commands.entries()) {
@@ -82,6 +100,9 @@ class CommandHandler {
     
     return results
   }
+  /**
+   * Parses command directory and registers all commands
+   */
   public async autoRegisterAll(): Promise<boolean> {
     readdirSync(path.resolve(__dirname, './commands')).forEach(async dir => {
       const commandFiles = readdirSync(path.resolve(__dirname, `./commands/${dir}/`)).filter(file => file.endsWith(`${process.env.NODE_ENV === 'production' ? ".js" : ".ts"}`))
@@ -102,6 +123,9 @@ class CommandHandler {
 
     return true
   }
+  /**
+   * Parses roleplay submodule directory and registers all commands
+   */
   public async registerRolePlay(): Promise<boolean> {
     const commandFiles = readdirSync(path.resolve(__dirname, '../../submodules/Yua-Roleplay/commands')).filter(file => file.endsWith('.json'))
     for (const command of commandFiles) {
@@ -121,6 +145,11 @@ class CommandHandler {
                 usage: type === 'both' ? "[user] [reason]" : (type === 'towards' ? "<user> [reason]" : "[reason]"),
                 category: 'roleplay',
                 aliases: rpCommand.aliases,
+                yuaPermissions: [
+                  'readMessages',
+                  'sendMessages',
+                  'embedLinks',
+                ],
               })
               this.yua = yua
             }
@@ -134,6 +163,9 @@ class CommandHandler {
 
     return true
   }
+  /**
+   * Sends roleplay response
+   */
   public async sendRoleplay(cmd: YuaRpCommand, props: CommandProps, yua: Yua, type: "self" | "towards" | "both"): Promise<void> {
     const {
       message,
@@ -373,15 +405,21 @@ class CommandHandler {
       break
     }
   }
+  /**
+   * Parses message for command
+   */
   public async parseCommand(message: Message): Promise<void> {
     const {
       author,
       channel,
+      guildID,
     } = message
     let { content } = message
 
     if (author.bot) return
-    if (message.channel.type === 1) return
+    if (message.channel.type !== 0) return
+
+    const guild = this.yua.client.guilds.get(message.guildID)
 
     content = content.replace(/<YUA_BOT_MENTION>/, "") // Probability of this happenening is small but probably should just in case
     const args = content.split(" ")
@@ -390,7 +428,7 @@ class CommandHandler {
     if (!args[0]) return
 
     if (args[0] && args[0].replace(/!/, "") === `<@${this.yua.client.user.id}>` && !args[1]) {
-      channel.createMessage(`Hi there, my name is Yua! My prefixes are: \`${prefixes.filter(item => item !== "<YUA_BOT_MENTION>").join("`, `")}\`${prefixes.includes("<YUA_BOT_MENTION>") ? `, <@${this.yua.client.user.id}>` : ""}`)
+      channel.createMessage(`Hi there, my name is Yua! My prefixes are: \`${prefixes.filter(item => item !== "<YUA_BOT_MENTION>").join("`, `")}\`${prefixes.includes("<YUA_BOT_MENTION>") ? `, <@${this.yua.client.user.id}>` : ""}`).catch(() => { /* Do Nothing */ })
     
       return
     }
@@ -415,14 +453,64 @@ class CommandHandler {
     if (!command) return
     args.shift() // Remove Command From Args Array
 
+    /**
+     * Helper function for creating messages
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
     const send = (content: string | { embed: EmbedOptions }): Promise<Message> => {
-      return channel.createMessage(content)
+      try {
+        const message = channel.createMessage(content)
+        message.catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            this.yua.console.error("Caught Error: CommandProps.send: This error will only show in NODE_ENV=development.\n", err)
+          }
+        })
+
+        return message
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          this.yua.console.error("Caught Error: CommandProps.send: This error will only show in NODE_ENV=development.\n", err)
+        }
+      }
     }
 
+    /**
+     * Helper function for creating messages in specift channels
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
+    const createMessage = (channel: string, content: string | { embed: EmbedOptions }): Promise<Message> => {
+      try {
+        const message = this.yua.client.createMessage(channel, content)
+        message.catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            this.yua.console.error("Caught Error: CommandProps.createMessage: This error will only show in NODE_ENV=development.\n", err)
+          }
+        })
+
+        return message
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          this.yua.console.error("Caught Error: CommandProps.createMessage: This error will only show in NODE_ENV=development.\n", err)
+        }
+      }
+    }
+
+    /**
+     * Helper function to create embed message
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
     const embed = (options: EmbedOptions): Promise<Message> => {
       return send({ embed: { ...options } })
     }
 
+    /**
+     * Helper function to create quick embed
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
     const quickEmbed = (title?: string, description?: string, color?: number): Promise<Message> => {
       return embed({
         title,
@@ -430,6 +518,82 @@ class CommandHandler {
         color: color || colors.default,
       })
     }
+
+    /**
+     * Helper function to delete message that triggered command execution
+     * 
+     * Errors are caught and only thrown if NODE_ENV=development
+     */
+    const deleteMessage = (reason?: string): void => {
+      message.delete(reason).catch((err) => {
+        if (process.env.NODE_ENV === 'development') {
+          this.yua.console.error("Caught Error: CommandProps.deleteMessage: This error will only show in NODE_ENV=development.\n", err)
+        }
+      })
+    }
+
+    const checkIfHasPerms = (channel: Eris.AnyGuildChannel, member: Eris.Member, permissions: ErisPermissions[]): { hasPerms: boolean, missingPerm: ErisPermissions } => {
+      let hasPerms = true
+      let missingPerm = undefined
+      for (const perm of permissions) {
+        if (member.permissions.has(perm)) {
+          if (!channel.permissionsOf(member).has(perm)) {
+            hasPerms = false
+            missingPerm = perm
+            break
+          }
+        } else {
+          if (!channel.permissionsOf(member).has(perm)) {
+            hasPerms = false
+            missingPerm = perm
+            break
+          }
+        }
+      }
+
+      return {
+        hasPerms,
+        missingPerm,
+      }
+    }
+
+    const guildChannel = this.yua.client.guilds.get(guildID).channels.get(channel.id)
+    const yuaMember = this.yua.client.guilds.get(guildID).members.get(this.yua.client.user.id)
+
+    if (!checkIfHasPerms(guildChannel, yuaMember, ['sendMessages']).hasPerms) {
+      try {
+        (await message.author.getDMChannel()).createMessage("It appears I am missing the permission to send messages in **" + guild.name + "**.\nI cannot do anything without this permission, please consult someone who can change this!").catch((err) => {
+          if (process.env.NODE_ENV === 'development') {
+            this.yua.console.error("Caught Error: CommandHandler/checkIfHasPerms/Yua/sendMessages: This error will only show in NODE_ENV=development.\n", err)
+          }
+        })
+      } catch (err) {
+        if (process.env.NODE_ENV === 'development') {
+          this.yua.console.error("Caught Error: CommandHandler/checkIfHasPerms/Yua/sendMessages: This error will only show in NODE_ENV=development.\n", err)
+        }
+      }
+      
+      return
+    }
+
+    if (!checkIfHasPerms(guildChannel, yuaMember, ['embedLinks']).hasPerms) {
+      send("It appears I am missing the permission to embed links in either this channel or the entire server.\nPlease enable this permission as I rely on it heavily!")
+
+      return
+    }
+
+    if (command.extra.yuaPermissions) {
+      const yuasPerms = checkIfHasPerms(guildChannel, yuaMember, command.extra.yuaPermissions)
+      if (!yuasPerms.hasPerms) {
+        if (yuasPerms.missingPerm !== 'viewChannel' && yuasPerms.missingPerm !== 'sendMessages' && yuasPerms.missingPerm !== 'readMessages') {
+          //if (checkIfHasPerms(guildChannel, yuaMember, ['embedLinks'])) {
+          quickEmbed(null, `Sorry, it seems I don't have **${yuasPerms.missingPerm}** permission, I cannot do that!`, colors.error)
+
+          return
+        }
+      }
+    }
+
     //console.log(this.yua.config)
     if (command.extra.devOnly && !this.yua.config.devs.includes(message.author.id)) {
       quickEmbed(null, "Apologies, but only my maintainers can utilize this!", colors.error)
@@ -437,24 +601,14 @@ class CommandHandler {
       return
     }
 
-    if (command.extra.permissions) {
-      let hasPerms = true
-      let missingPerm = undefined
-      for (const perm of command.extra.permissions) {
-        if (!message.member.permissions.has(perm)) {
-          hasPerms = false
-          missingPerm = perm
-          break
-        }
-      }
-      if (!hasPerms) {
-        quickEmbed(null, `Sorry, it seems you don't have **${missingPerm}** permission, I cannot let you do that!`, colors.error)
+    if (command.extra.userPermissions) {
+      const userPerms = checkIfHasPerms(guildChannel, message.member, command.extra.userPermissions)
+      if (!userPerms.hasPerms) {
+        quickEmbed(null, `Sorry, it seems you don't have **${userPerms.missingPerm}** permission, I cannot let you do that!`, colors.error)
 
         return
       }
     }
-
-    const guild = this.yua.client.guilds.get(message.guildID)
 
     try {
       const props: CommandProps = {
@@ -463,7 +617,12 @@ class CommandHandler {
         send,
         embed,
         quickEmbed,
+        checkIfHasPerms,
+        deleteMessage,
         guild,
+        yuaMember,
+        guildChannel,
+        createMessage,
       }
 
       await command.execute(props)

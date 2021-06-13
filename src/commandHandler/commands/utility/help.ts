@@ -20,6 +20,11 @@ class YuaCommand extends BaseCommand {
         "commands",
         "yuafordummies",
       ],
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }
@@ -49,10 +54,11 @@ class YuaCommand extends BaseCommand {
   
       for (const cat of this.yua.commandHandler.categories) {
         if (cat === "developer") continue
+        const catConfig = categoryHelp[cat]
         helpEmbed.fields.push({
-          name: `${categoryHelp[cat].emoji} ${cat.toLowerCase().charAt(0)
+          name: `${catConfig ? `${catConfig.emoji} ` : ""}${catConfig ? catConfig.name : cat.toLowerCase().charAt(0)
             .toUpperCase() + cat.toLowerCase().slice(1)} (${commands.filter(cmd => cmd.extra.category === cat).length})`,
-          value: `*${categoryHelp[cat].text}*`,
+          value: `*${catConfig ? catConfig.text : "No category description defined"}*`,
           inline: true,
         })
       }
@@ -77,7 +83,8 @@ class YuaCommand extends BaseCommand {
       if (categories.includes(args[0].toLowerCase()) && evalUser) {
         const commands = Array.from(this.yua.commandHandler.filter(cmd => cmd.extra.category === args[0].toLowerCase()).values())
           .sort(this.sort)
-        const uppercaseCat = args[0]
+        const catConfig = categoryHelp[args[0].toLowerCase()]
+        const uppercaseCat = catConfig ? catConfig.name : args[0]
           .toLowerCase()
           .charAt(0)
           .toUpperCase() +
@@ -134,7 +141,8 @@ class YuaCommand extends BaseCommand {
 
             return
           }
-          const uppercaseCat = command.extra.category
+          const catConfig = categoryHelp[command.extra.category]
+          const uppercaseCat = catConfig ? catConfig.name : command.extra.category
             .toLowerCase()
             .charAt(0)
             .toUpperCase() +
@@ -176,6 +184,16 @@ class YuaCommand extends BaseCommand {
               {
                 name: "Category",
                 value: `\`${command.extra.category}\``,
+                inline: true,
+              },
+              {
+                name: "Permissions You Need",
+                value: `${command.extra.userPermissions && command.extra.userPermissions[0] ? `\`${command.extra.userPermissions.join("`, `")}\`` : "No Permission Needed"}`,
+                inline: true,
+              },
+              {
+                name: "Permissions I Need",
+                value: `${command.extra.yuaPermissions && command.extra.yuaPermissions[0] ? `\`${command.extra.yuaPermissions.join("`, `")}\`` : "No Permission Needed"}`,
                 inline: true,
               },
             ],

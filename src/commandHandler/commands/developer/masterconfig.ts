@@ -12,6 +12,11 @@ class YuaCommand extends BaseCommand {
       category: "developer",
       aliases: ["mscf"],
       devOnly: true,
+      yuaPermissions: [
+        'readMessages',
+        'sendMessages',
+        'embedLinks',
+      ],
     })
     this.yua = yua
   }

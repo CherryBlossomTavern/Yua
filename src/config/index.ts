@@ -19,14 +19,21 @@ export const colors = {
   info:0xb0d3ff, // #b0d3ff
 }
 
-export const categoryHelp: { [category: string]: { text: string, emoji: string } } = {
+export const categoryHelp: { [category: string]: { text: string, emoji: string, name: string } } = {
   roleplay: {
+    name: "Roleplay",
     text: "Many commands to fit any of your chat roleplay desires",
     emoji: ":hugging:",
   },
   utility: {
+    name: "Utility",
     text: "Left over commands that did not fit anywhere that may prove useful",
     emoji: ":flashlight:",
+  },
+  "reaction-roles": {
+    name: "Reaction-Roles",
+    text: "Let users react on a menu and recieve roles with ease",
+    emoji: ":point_up_2:",
   },
 }
 
@@ -35,5 +42,11 @@ export const defaultDevs: string[] = [
   "316669053957832706",
 ]
 
-export const inviteLink = "https://discord.com/oauth2/authorize?client_id=808779804789702696&scope=bot&permissions=8&redirect_uri=https%3A%2F%2Fdiscord.gg%2Fyua"
 export const inviteRedirect = "https%3A%2F%2Fdiscord.gg%2Fyua"
+
+export const boostMessageTypes: number[] = [
+  8,
+  9,
+  10,
+  11,
+]
