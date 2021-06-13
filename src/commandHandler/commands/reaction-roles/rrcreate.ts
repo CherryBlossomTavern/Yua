@@ -12,7 +12,7 @@ class YuaCommand extends BaseCommand {
   private props: CommandProps
   constructor(yua: Yua) {
     super("rrcreate", {
-      usage: "",
+      usage: "[type]",
       description: "Create a new reaction role menu with my step by step setup!\nUse https://embedbuilder.yua.gg/ to create your embed!",
       category: "reaction-roles",
       aliases: [],
@@ -35,94 +35,109 @@ class YuaCommand extends BaseCommand {
     this.props = props
     const {
       message,
+      args,
+      quickEmbed,
     } = this.props
 
-    const addEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620730044457'), // Add
-      removeEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620440506399'), // Remove
-      uniqueEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846180587093360652'), // Unique
-      bindingEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846182159483928617'), // Binding
-      limitedEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846184576694616074') // Limited
-
-    const emojiToType = new Map<string,"add"|"remove"|"unique"|"binding"|"limited">([
-      ['846179620730044457', 'add'],
-      ['846179620440506399', 'remove'],
-      ['846180587093360652', 'unique'],
-      ['846182159483928617', 'binding'],
-      ['846184576694616074', 'limited'],
-    ])
-
-    const rr = new Menu<[Eris.Emoji]>(this.yua, {
-      purgeAllWhenDone: true,
-      collectorTimeout: 200000,
-    })
-
-    rr.addReactionQuestion({
-      content: {
-        embed: {
-          "color": 16772525,
-          "title": "Reaction Role Menu Type",
-          "description": "Type `cancel` at any time to stop the reaction role creation process",
-          "fields": [
-            {
-              "name": "<:RRadd:846179620730044457> Add",
-              "value": "Reacting will give the user any or all roles in this menu. Removing the reaction will remove the role.",
-              "inline": true,
-            },
-            {
-              "name": "<:RRremove:846179620440506399> Remove",
-              "value": " Reacting will take away the selected roles. Roles can only be removed, not added.",
-              "inline": true,
-            },
-            {
-              "name": "<:RRUnique:846180587093360652> Unique",
-              "value": "Users can only hold one role in the menu at a time.",
-              "inline": true,
-            },
-            {
-              "name": "<:RRBinding:846182159483928617> Binding",
-              "value": "Reacting will result in a role being added to the user that cannot be removed by the same menu. ",
-              "inline": true,
-            },
-            {
-              "name": "<:RRLimited:846184576694616074> Limited",
-              "value": "User can react and receive only a certain amount of roles set by the person creating the role menu.",
-              "inline": true,
-            },
-          ],
-        },
-      },
-      reactions: [
-        addEmoji,
-        removeEmoji,
-        uniqueEmoji,
-        bindingEmoji,
-        limitedEmoji,
-      ],
-    })
-    rr.once('end', (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
-        const type = emojiToType.get(collected[0].id)
-        switch (type) {
-        case 'add':
-          this._handleMenuTypeAdd()
-          break
-        case 'remove':
-          this._handleMenuTypeRemove()
-          break
-        case 'binding':
-          this._handleMenuTypeBinding()
-          break
-        case 'limited':
-          this._handleMenuTypeLimited()
-          break
-        case 'unique':
-          this._handleMenuTypeUnique()
-          break
-        }
+    const switchType = (type: "add" | "remove" | "unique" | "binding" | "limited"): void => {
+      switch (type) {
+      case 'add':
+        this._handleMenuTypeAdd()
+        break
+      case 'remove':
+        this._handleMenuTypeRemove()
+        break
+      case 'binding':
+        this._handleMenuTypeBinding()
+        break
+      case 'limited':
+        this._handleMenuTypeLimited()
+        break
+      case 'unique':
+        this._handleMenuTypeUnique()
+        break
       }
-    })
+    }
 
-    rr.start(message)
+    if (!args[0]) {
+      const addEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620730044457'), // Add
+        removeEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620440506399'), // Remove
+        uniqueEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846180587093360652'), // Unique
+        bindingEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846182159483928617'), // Binding
+        limitedEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846184576694616074') // Limited
+
+      const emojiToType = new Map<string,"add"|"remove"|"unique"|"binding"|"limited">([
+        ['846179620730044457', 'add'],
+        ['846179620440506399', 'remove'],
+        ['846180587093360652', 'unique'],
+        ['846182159483928617', 'binding'],
+        ['846184576694616074', 'limited'],
+      ])
+
+      const rr = new Menu<[Eris.Emoji]>(this.yua, {
+        purgeAllWhenDone: true,
+        collectorTimeout: 200000,
+      })
+
+      rr.addReactionQuestion({
+        content: {
+          embed: {
+            "color": 16772525,
+            "title": "Reaction Role Menu Type",
+            "description": "Type `cancel` at any time to stop the reaction role creation process",
+            "fields": [
+              {
+                "name": "<:RRadd:846179620730044457> Add",
+                "value": "Reacting will give the user any or all roles in this menu. Removing the reaction will remove the role.",
+                "inline": true,
+              },
+              {
+                "name": "<:RRremove:846179620440506399> Remove",
+                "value": " Reacting will take away the selected roles. Roles can only be removed, not added.",
+                "inline": true,
+              },
+              {
+                "name": "<:RRUnique:846180587093360652> Unique",
+                "value": "Users can only hold one role in the menu at a time.",
+                "inline": true,
+              },
+              {
+                "name": "<:RRBinding:846182159483928617> Binding",
+                "value": "Reacting will result in a role being added to the user that cannot be removed by the same menu. ",
+                "inline": true,
+              },
+              {
+                "name": "<:RRLimited:846184576694616074> Limited",
+                "value": "User can react and receive only a certain amount of roles set by the person creating the role menu.",
+                "inline": true,
+              },
+            ],
+          },
+        },
+        reactions: [
+          addEmoji,
+          removeEmoji,
+          uniqueEmoji,
+          bindingEmoji,
+          limitedEmoji,
+        ],
+      })
+      rr.once('end', (collected, reason) => {
+        if (this._handleCollectorEnd(reason)) {
+          switchType(emojiToType.get(collected[0].id))
+        }
+      })
+
+      rr.start(message)
+    } else {
+      if (/(add|remove|unique|binding|limited)/.test(args[0].toLowerCase())) {
+        switchType(args[0] as "add" | "remove" | "unique" | "binding" | "limited")
+      } else {
+        quickEmbed(undefined, `Sorry, but \`${args[0]}\` is not a valid menu type. Maybe just try using \`yua rrcreate\``, colors.error)
+        
+        return
+      }
+    }
 
     return
   }
@@ -146,7 +161,7 @@ class YuaCommand extends BaseCommand {
       content: {
         "embed": {
           "color": 16772525,
-          "description": "Ooh Nice! Okay, the last thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
+          "description": "Ooh Nice! Okay, the next thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
         },
       },
       callback: (msg) => {
@@ -207,16 +222,340 @@ class YuaCommand extends BaseCommand {
     menu.start(this.props.message)
   }
   private _handleMenuTypeRemove(): void {
-    
+    const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
+      purgeAllWhenDone: true,
+      collectorTimeout: 300000,
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Okie! Now for the reaction role menu message. Please specify either normal content for me to say or create an embed using [my embed creator](https://embedbuilder.yua.gg/)\n\n*type `cancel` at any time to stop the reaction role creation process*",
+        },
+      },
+      callback: async (msg) => {
+        return this._menuContentLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Ooh Nice! Okay, the next thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
+        },
+      },
+      callback: (msg) => {
+        return this._emojiRoleLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Yay, you are almost there! The last thing I need to know is where you would like me to put the menu.\n\nPlease mention a channel like so: `#channel-name`",
+        },
+      },
+      callback: (msg) => {
+        return this._validateChannel(msg)
+      },
+    })
+
+    menu.once('end', async (collected, reason) => {
+      if (this._handleCollectorEnd(reason)) {
+        const extracted = this._extractEmojiRolePairs(collected[1])
+        const channel = collected[2].channelMentions[0]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let content: any = collected[0].content
+        try {
+          content = await getEmbedJson(collected[0], collected[0].content)
+        } catch {}
+
+        this.props.createMessage(channel, content)
+          .then((m) => {
+            //console.log(extracted.emojisToAddToEmbed)
+            for (const emoji of extracted.emojisToAddToEmbed) {
+              try {
+                m.addReaction(emoji).catch(() => { /* Do Nothing */ })
+              } catch (error) {
+                
+              }
+            }
+            ReactionRole.create({
+              guildId: this.props.guild.id,
+              channelId: channel,
+              messageId: m.id,
+              type: 'remove',
+              roles: extracted.roles,
+              limit: 0,
+            })
+              .catch(() => {
+                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+              })
+          })
+          .catch(() => {
+            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+          })
+        this.props.deleteMessage()
+      }
+    })
+
+    menu.start(this.props.message)
   }
   private _handleMenuTypeUnique(): void {
-    
+    const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
+      purgeAllWhenDone: true,
+      collectorTimeout: 300000,
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Okie! Now for the reaction role menu message. Please specify either normal content for me to say or create an embed using [my embed creator](https://embedbuilder.yua.gg/)\n\n*type `cancel` at any time to stop the reaction role creation process*",
+        },
+      },
+      callback: async (msg) => {
+        return this._menuContentLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Ooh Nice! Okay, the next thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
+        },
+      },
+      callback: (msg) => {
+        return this._emojiRoleLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Yay, you are almost there! The last thing I need to know is where you would like me to put the menu.\n\nPlease mention a channel like so: `#channel-name`",
+        },
+      },
+      callback: (msg) => {
+        return this._validateChannel(msg)
+      },
+    })
+
+    menu.once('end', async (collected, reason) => {
+      if (this._handleCollectorEnd(reason)) {
+        const extracted = this._extractEmojiRolePairs(collected[1])
+        const channel = collected[2].channelMentions[0]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let content: any = collected[0].content
+        try {
+          content = await getEmbedJson(collected[0], collected[0].content)
+        } catch {}
+
+        this.props.createMessage(channel, content)
+          .then((m) => {
+            //console.log(extracted.emojisToAddToEmbed)
+            for (const emoji of extracted.emojisToAddToEmbed) {
+              try {
+                m.addReaction(emoji).catch(() => { /* Do Nothing */ })
+              } catch (error) {
+                
+              }
+            }
+            ReactionRole.create({
+              guildId: this.props.guild.id,
+              channelId: channel,
+              messageId: m.id,
+              type: 'unique',
+              roles: extracted.roles,
+              limit: 0,
+            })
+              .catch(() => {
+                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+              })
+          })
+          .catch(() => {
+            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+          })
+        this.props.deleteMessage()
+      }
+    })
+
+    menu.start(this.props.message)
   }
   private _handleMenuTypeBinding(): void {
-    
+    const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
+      purgeAllWhenDone: true,
+      collectorTimeout: 300000,
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Okie! Now for the reaction role menu message. Please specify either normal content for me to say or create an embed using [my embed creator](https://embedbuilder.yua.gg/)\n\n*type `cancel` at any time to stop the reaction role creation process*",
+        },
+      },
+      callback: async (msg) => {
+        return this._menuContentLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Ooh Nice! Okay, the next thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
+        },
+      },
+      callback: (msg) => {
+        return this._emojiRoleLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Yay, you are almost there! The last thing I need to know is where you would like me to put the menu.\n\nPlease mention a channel like so: `#channel-name`",
+        },
+      },
+      callback: (msg) => {
+        return this._validateChannel(msg)
+      },
+    })
+
+    menu.once('end', async (collected, reason) => {
+      if (this._handleCollectorEnd(reason)) {
+        const extracted = this._extractEmojiRolePairs(collected[1])
+        const channel = collected[2].channelMentions[0]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let content: any = collected[0].content
+        try {
+          content = await getEmbedJson(collected[0], collected[0].content)
+        } catch {}
+
+        this.props.createMessage(channel, content)
+          .then((m) => {
+            //console.log(extracted.emojisToAddToEmbed)
+            for (const emoji of extracted.emojisToAddToEmbed) {
+              try {
+                m.addReaction(emoji).catch(() => { /* Do Nothing */ })
+              } catch (error) {
+                
+              }
+            }
+            ReactionRole.create({
+              guildId: this.props.guild.id,
+              channelId: channel,
+              messageId: m.id,
+              type: 'binding',
+              roles: extracted.roles,
+              limit: 0,
+            })
+              .catch(() => {
+                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+              })
+          })
+          .catch(() => {
+            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+          })
+        this.props.deleteMessage()
+      }
+    })
+
+    menu.start(this.props.message)
   }
   private _handleMenuTypeLimited(): void {
-    
+    const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
+      purgeAllWhenDone: true,
+      collectorTimeout: 300000,
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Okie! Now for the reaction role menu message. Please specify either normal content for me to say or create an embed using [my embed creator](https://embedbuilder.yua.gg/)\n\n*type `cancel` at any time to stop the reaction role creation process*",
+        },
+      },
+      callback: async (msg) => {
+        return this._menuContentLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Ooh Nice! Okay, the next thing I need is for you to tell me what emojis and roles you want to be put on the reaction role menu!\n\nTo do this please follow this format:\n```👍 @thumbsUpRole 👎 @thumbsDownRole ...```",
+        },
+      },
+      callback: (msg) => {
+        return this._emojiRoleLogic(msg)
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Okie! Now I need to know how many roles you would like to limit members to receiving!",
+        },
+      },
+      callback: (msg) => {
+        if (!parseInt(msg.content)) {
+          return `${msg.content} is not a valid number, please send a valid number`
+        }
+
+        return true
+      },
+    })
+    menu.addResponseQuestion({
+      content: {
+        "embed": {
+          "color": 16772525,
+          "description": "Yay, you are almost there! The last thing I need to know is where you would like me to put the menu.\n\nPlease mention a channel like so: `#channel-name`",
+        },
+      },
+      callback: (msg) => {
+        return this._validateChannel(msg)
+      },
+    })
+
+    menu.once('end', async (collected, reason) => {
+      if (this._handleCollectorEnd(reason)) {
+        const extracted = this._extractEmojiRolePairs(collected[1])
+        const amount = parseInt(collected[2].content)
+        const channel = collected[3].channelMentions[0]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let content: any = collected[0].content
+        try {
+          content = await getEmbedJson(collected[0], collected[0].content)
+        } catch {}
+
+        this.props.createMessage(channel, content)
+          .then((m) => {
+            //console.log(extracted.emojisToAddToEmbed)
+            for (const emoji of extracted.emojisToAddToEmbed) {
+              try {
+                m.addReaction(emoji).catch(() => { /* Do Nothing */ })
+              } catch (error) {
+                
+              }
+            }
+            ReactionRole.create({
+              guildId: this.props.guild.id,
+              channelId: channel,
+              messageId: m.id,
+              type: 'limited',
+              roles: extracted.roles,
+              limit: amount,
+            })
+              .catch(() => {
+                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+              })
+          })
+          .catch(() => {
+            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+          })
+        this.props.deleteMessage()
+      }
+    })
+
+    menu.start(this.props.message)
   }
 
   private async _menuContentLogic(msg: Eris.Message): Promise<string | boolean> {
@@ -227,7 +566,7 @@ class YuaCommand extends BaseCommand {
     } catch (error) {
       const err: { failed: boolean, toolarge: boolean, invalid: boolean, err: unknown } = error
       if (err.toolarge) {
-        return "Embed is too large, it must not exceed 6000 character"
+        return "Embed is too large, it must not exceed 6000 characters"
       } else if (err.failed) {
         return "Failed to download embed file"
       } else {
@@ -254,7 +593,7 @@ class YuaCommand extends BaseCommand {
               if (col[0].name === '👍') {
                 res(true)
               } else {
-                res(`When attempting to parse your embed received the error\n\`\`\`${err.err}\`\`\`\nPlease send the fixed embed below: `)
+                res(`When attempting to parse your embed, I received the error\n\`\`\`${err.err}\`\`\`\nPlease send the fixed embed below: `)
               }
             } else {
               res("Please send role menu message again")
@@ -366,6 +705,7 @@ class YuaCommand extends BaseCommand {
           "description": "Reaction Role Creation Exited With Error!",
         },
       })
+      deleteMessage()
 
       return false
     case 'timedOut':
@@ -375,6 +715,7 @@ class YuaCommand extends BaseCommand {
           "description": "Reaction Role Creation Timed Out!",
         },
       })
+      deleteMessage()
 
       return false
     case 'finish':
