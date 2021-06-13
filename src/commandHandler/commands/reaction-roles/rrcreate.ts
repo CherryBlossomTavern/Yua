@@ -10,7 +10,6 @@ import { colors } from '../../../config'
 import { getEmbedJson } from '../../../utils'
 class YuaCommand extends BaseCommand {
   private yua: Yua
-  private props: CommandProps
   constructor(yua: Yua) {
     super("rrcreate", {
       usage: "[type]",
@@ -33,29 +32,28 @@ class YuaCommand extends BaseCommand {
     this.yua = yua
   }
   public execute(props: CommandProps): void {
-    this.props = props
     const {
       message,
       args,
       quickEmbed,
-    } = this.props
+    } = props
 
     const switchType = (type: "add" | "remove" | "unique" | "binding" | "limited"): void => {
       switch (type) {
       case 'add':
-        this._handleMenuTypeAdd()
+        this._handleMenuTypeAdd(props)
         break
       case 'remove':
-        this._handleMenuTypeRemove()
+        this._handleMenuTypeRemove(props)
         break
       case 'binding':
-        this._handleMenuTypeBinding()
+        this._handleMenuTypeBinding(props)
         break
       case 'limited':
-        this._handleMenuTypeLimited()
+        this._handleMenuTypeLimited(props)
         break
       case 'unique':
-        this._handleMenuTypeUnique()
+        this._handleMenuTypeUnique(props)
         break
       }
     }
@@ -169,7 +167,7 @@ class YuaCommand extends BaseCommand {
         ],
       })
       rr.once('end', (collected, reason) => {
-        if (this._handleCollectorEnd(reason)) {
+        if (this._handleCollectorEnd(props, reason)) {
           switchType(emojiToType.get(collected[0].id))
         }
       })
@@ -187,7 +185,7 @@ class YuaCommand extends BaseCommand {
 
     return
   }
-  private _handleMenuTypeAdd(): void {
+  private _handleMenuTypeAdd(props: CommandProps): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -200,7 +198,7 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: async (msg) => {
-        return this._menuContentLogic(msg)
+        return this._menuContentLogic(props, msg)
       },
     })
     menu.addResponseQuestion({
@@ -222,12 +220,12 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        return this._validateChannel(msg)
+        return this._validateChannel(props, msg)
       },
     })
 
     menu.once('end', async (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
+      if (this._handleCollectorEnd(props, reason)) {
         const extracted = this._extractEmojiRolePairs(collected[1])
         const channel = collected[2].channelMentions[0]
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -236,7 +234,7 @@ class YuaCommand extends BaseCommand {
           content = await getEmbedJson(collected[0], collected[0].content)
         } catch {}
 
-        this.props.createMessage(channel, content)
+        props.createMessage(channel, content)
           .then((m) => {
             //console.log(extracted.emojisToAddToEmbed)
             for (const emoji of extracted.emojisToAddToEmbed) {
@@ -247,7 +245,7 @@ class YuaCommand extends BaseCommand {
               }
             }
             ReactionRole.create({
-              guildId: this.props.guild.id,
+              guildId: props.guild.id,
               channelId: channel,
               messageId: m.id,
               type: 'add',
@@ -255,19 +253,19 @@ class YuaCommand extends BaseCommand {
               limit: 0,
             })
               .catch(() => {
-                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+                props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
               })
           })
           .catch(() => {
-            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+            props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
           })
-        this.props.deleteMessage()
+        props.deleteMessage()
       }
     })
 
-    menu.start(this.props.message)
+    menu.start(props.message)
   }
-  private _handleMenuTypeRemove(): void {
+  private _handleMenuTypeRemove(props: CommandProps): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -280,7 +278,7 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: async (msg) => {
-        return this._menuContentLogic(msg)
+        return this._menuContentLogic(props, msg)
       },
     })
     menu.addResponseQuestion({
@@ -302,12 +300,12 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        return this._validateChannel(msg)
+        return this._validateChannel(props, msg)
       },
     })
 
     menu.once('end', async (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
+      if (this._handleCollectorEnd(props, reason)) {
         const extracted = this._extractEmojiRolePairs(collected[1])
         const channel = collected[2].channelMentions[0]
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -316,7 +314,7 @@ class YuaCommand extends BaseCommand {
           content = await getEmbedJson(collected[0], collected[0].content)
         } catch {}
 
-        this.props.createMessage(channel, content)
+        props.createMessage(channel, content)
           .then((m) => {
             //console.log(extracted.emojisToAddToEmbed)
             for (const emoji of extracted.emojisToAddToEmbed) {
@@ -327,7 +325,7 @@ class YuaCommand extends BaseCommand {
               }
             }
             ReactionRole.create({
-              guildId: this.props.guild.id,
+              guildId: props.guild.id,
               channelId: channel,
               messageId: m.id,
               type: 'remove',
@@ -335,19 +333,19 @@ class YuaCommand extends BaseCommand {
               limit: 0,
             })
               .catch(() => {
-                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+                props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
               })
           })
           .catch(() => {
-            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+            props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
           })
-        this.props.deleteMessage()
+        props.deleteMessage()
       }
     })
 
-    menu.start(this.props.message)
+    menu.start(props.message)
   }
-  private _handleMenuTypeUnique(): void {
+  private _handleMenuTypeUnique(props: CommandProps): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -360,7 +358,7 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: async (msg) => {
-        return this._menuContentLogic(msg)
+        return this._menuContentLogic(props, msg)
       },
     })
     menu.addResponseQuestion({
@@ -382,12 +380,12 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        return this._validateChannel(msg)
+        return this._validateChannel(props, msg)
       },
     })
 
     menu.once('end', async (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
+      if (this._handleCollectorEnd(props, reason)) {
         const extracted = this._extractEmojiRolePairs(collected[1])
         const channel = collected[2].channelMentions[0]
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -396,7 +394,7 @@ class YuaCommand extends BaseCommand {
           content = await getEmbedJson(collected[0], collected[0].content)
         } catch {}
 
-        this.props.createMessage(channel, content)
+        props.createMessage(channel, content)
           .then((m) => {
             //console.log(extracted.emojisToAddToEmbed)
             for (const emoji of extracted.emojisToAddToEmbed) {
@@ -407,7 +405,7 @@ class YuaCommand extends BaseCommand {
               }
             }
             ReactionRole.create({
-              guildId: this.props.guild.id,
+              guildId: props.guild.id,
               channelId: channel,
               messageId: m.id,
               type: 'unique',
@@ -415,19 +413,19 @@ class YuaCommand extends BaseCommand {
               limit: 0,
             })
               .catch(() => {
-                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+                props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
               })
           })
           .catch(() => {
-            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+            props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
           })
-        this.props.deleteMessage()
+        props.deleteMessage()
       }
     })
 
-    menu.start(this.props.message)
+    menu.start(props.message)
   }
-  private _handleMenuTypeBinding(): void {
+  private _handleMenuTypeBinding(props: CommandProps): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -440,7 +438,7 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: async (msg) => {
-        return this._menuContentLogic(msg)
+        return this._menuContentLogic(props, msg)
       },
     })
     menu.addResponseQuestion({
@@ -462,12 +460,12 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        return this._validateChannel(msg)
+        return this._validateChannel(props, msg)
       },
     })
 
     menu.once('end', async (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
+      if (this._handleCollectorEnd(props, reason)) {
         const extracted = this._extractEmojiRolePairs(collected[1])
         const channel = collected[2].channelMentions[0]
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -476,7 +474,7 @@ class YuaCommand extends BaseCommand {
           content = await getEmbedJson(collected[0], collected[0].content)
         } catch {}
 
-        this.props.createMessage(channel, content)
+        props.createMessage(channel, content)
           .then((m) => {
             //console.log(extracted.emojisToAddToEmbed)
             for (const emoji of extracted.emojisToAddToEmbed) {
@@ -487,7 +485,7 @@ class YuaCommand extends BaseCommand {
               }
             }
             ReactionRole.create({
-              guildId: this.props.guild.id,
+              guildId: props.guild.id,
               channelId: channel,
               messageId: m.id,
               type: 'binding',
@@ -495,19 +493,19 @@ class YuaCommand extends BaseCommand {
               limit: 0,
             })
               .catch(() => {
-                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+                props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
               })
           })
           .catch(() => {
-            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+            props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
           })
-        this.props.deleteMessage()
+        props.deleteMessage()
       }
     })
 
-    menu.start(this.props.message)
+    menu.start(props.message)
   }
-  private _handleMenuTypeLimited(): void {
+  private _handleMenuTypeLimited(props: CommandProps): void {
     const menu = new Menu<[Eris.Message, Eris.Message, Eris.Message, Eris.Message]>(this.yua, {
       purgeAllWhenDone: true,
       collectorTimeout: 300000,
@@ -520,7 +518,7 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: async (msg) => {
-        return this._menuContentLogic(msg)
+        return this._menuContentLogic(props, msg)
       },
     })
     menu.addResponseQuestion({
@@ -557,12 +555,12 @@ class YuaCommand extends BaseCommand {
         },
       },
       callback: (msg) => {
-        return this._validateChannel(msg)
+        return this._validateChannel(props, msg)
       },
     })
 
     menu.once('end', async (collected, reason) => {
-      if (this._handleCollectorEnd(reason)) {
+      if (this._handleCollectorEnd(props, reason)) {
         const extracted = this._extractEmojiRolePairs(collected[1])
         const amount = parseInt(collected[2].content)
         const channel = collected[3].channelMentions[0]
@@ -572,7 +570,7 @@ class YuaCommand extends BaseCommand {
           content = await getEmbedJson(collected[0], collected[0].content)
         } catch {}
 
-        this.props.createMessage(channel, content)
+        props.createMessage(channel, content)
           .then((m) => {
             //console.log(extracted.emojisToAddToEmbed)
             for (const emoji of extracted.emojisToAddToEmbed) {
@@ -583,7 +581,7 @@ class YuaCommand extends BaseCommand {
               }
             }
             ReactionRole.create({
-              guildId: this.props.guild.id,
+              guildId: props.guild.id,
               channelId: channel,
               messageId: m.id,
               type: 'limited',
@@ -591,20 +589,20 @@ class YuaCommand extends BaseCommand {
               limit: amount,
             })
               .catch(() => {
-                this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+                props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
               })
           })
           .catch(() => {
-            this.props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
+            props.quickEmbed(undefined, "An error occured while trying to create menu", colors.error)
           })
-        this.props.deleteMessage()
+        props.deleteMessage()
       }
     })
 
-    menu.start(this.props.message)
+    menu.start(props.message)
   }
 
-  private async _menuContentLogic(msg: Eris.Message): Promise<string | boolean> {
+  private async _menuContentLogic(props: CommandProps, msg: Eris.Message): Promise<string | boolean> {
     try {
       await getEmbedJson(msg, msg.content)
       
@@ -645,7 +643,7 @@ class YuaCommand extends BaseCommand {
               res("Please send role menu message again")
             }
           })
-          uSure.start(this.props.message)
+          uSure.start(props.message)
         })
       }
     }
@@ -669,12 +667,12 @@ class YuaCommand extends BaseCommand {
     }
   }
 
-  private _validateChannel(msg: Eris.Message): boolean | string {
+  private _validateChannel(props: CommandProps, msg: Eris.Message): boolean | string {
     if (!msg.channelMentions[0]) return "That doesn't seem right. Please mention a channel like so: `#channel-name`"
-    const channel = this.props.guild.channels.get(msg.channelMentions[0])
+    const channel = props.guild.channels.get(msg.channelMentions[0])
     if (!channel) return "I could not locate that channel. Do I have the correct permissions?"
 
-    const yuaPerms = this.props.checkIfHasPerms(channel, this.props.yuaMember, this.extra.yuaPermissions)
+    const yuaPerms = props.checkIfHasPerms(channel, props.yuaMember, this.extra.yuaPermissions)
     if (!yuaPerms.hasPerms) {
       return  `Sorry, it seems I don't have **${yuaPerms.missingPerm}** permission, I cannot use that channel!`
     }
@@ -727,11 +725,11 @@ class YuaCommand extends BaseCommand {
 
     return true
   }
-  private _handleCollectorEnd(reason: string): boolean {
+  private _handleCollectorEnd(props: CommandProps, reason: string): boolean {
     const {
       send,
       deleteMessage,
-    } = this.props
+    } = props
     //console.log("reason:",reason)
     switch (reason) {
     case 'cancel':

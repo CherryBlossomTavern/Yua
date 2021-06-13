@@ -85,7 +85,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
   private _authorId: string
   private _queue: (MenuReactionQuestion | MenuResponseQuestion)[] = []
   private _currentQuestionMessageId: string
-  private _msgDelete: string[] = []
+  private _msgDelete: Eris.Message[] = []
   private _purgeAllWhenDone = false
   public ended = false
   public collected: R = [] as R
@@ -115,6 +115,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     this.yua.client.on("messageReactionRemoveEmoji", this._handleReactionDeleteEmoji)
 
     this.once(Events.end, () => {
+      // console.log("end", reason)
       this.yua.client.removeListener("messageCreate", this._handleResponse)
       this.yua.client.removeListener("messageReactionAdd", this._handleReaction)
       this.yua.client.removeListener("channelDelete", this._handleChannelDeletion)
@@ -127,7 +128,8 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if (this._purgeAllWhenDone) {
         setTimeout(() => {
           try {
-            this.yua.client.deleteMessages(this._channelId, this._msgDelete, "Reaction Role Menu Creation Cleanup").catch((err) => {
+            // console.log(this._msgDelete.map(msg => msg.id), this._authorId)
+            this.yua.client.deleteMessages(this._channelId, this._msgDelete.map(m => m.id), "Reaction Role Menu Creation Cleanup").catch((err) => {
               if (process.env.NODE_ENV === 'development') {
                 this.yua.console.error("Caught Error: Menu.bulkDelete: This error will only show in NODE_ENV=development.\n", err)
               }
@@ -154,8 +156,8 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     return this
   }
 
-  public addMessageToPrune(id: string): this {
-    this._msgDelete.push(id)
+  public addMessageToPrune(msg: Eris.Message): this {
+    this._msgDelete.push(msg)
 
     return this
   }
@@ -163,7 +165,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
   public start(message: Eris.Message): this {
     this._guildId = message.guildID
     this._channelId = message.channel.id
-    this._authorId = message.author.id
+    this._authorId = message.member.id
     this._queue = new Array(...this._questions)
     this._timeout = setTimeout(() => this.stop(EndReasons.timedOut), this._collectorTimeout)
     this.yua.client.on("messageCreate", this._handleResponse)
@@ -202,7 +204,8 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     if ("reactions" in item) {
       this.send(item.content)
         .then((m) => {
-          this._msgDelete.push(m.id)
+          // console.log(m.id)
+          this._msgDelete.push(m)
           this._currentQuestionMessageId = m.id
           for (const emoji of item.reactions) {
             m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
@@ -212,14 +215,15 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     } else {
       this.send(item.content)
         .then((m) => {
-          this._msgDelete.push(m.id)
+          // console.log(m.id)
+          this._msgDelete.push(m)
           this._currentQuestionMessageId = m.id
         })
     }
   }
   private async _handleResponse(msg: Eris.Message): Promise<void> {
     if (msg.channel.id === this._channelId && msg.author.id === this._authorId) {
-      this._msgDelete.push(msg.id)
+      this._msgDelete.push(msg)
       if (msg.content.toLowerCase() === this._bailWord) {
         this.stop(EndReasons.cancel)
 
@@ -241,7 +245,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
                 description: cb,
               },
             })
-              .then((m) => { this._msgDelete.push(m.id) })
+              .then((m) => { this._msgDelete.push(m) })
           } else {
             this.send({
               embed: {
@@ -249,10 +253,13 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
                 description: item.invalidResponse || "Invalid Response ;-; Please Try Again or Type `" + this._bailWord + "`",
               },
             })
-              .then((m) => { this._msgDelete.push(m.id) })
+              .then((m) => { this._msgDelete.push(m) })
           }
         }
       } else {
+        if ("reactions" in item) {
+          return
+        }
         this.collected.push(msg)
         this._queue.shift()
         this._start()
@@ -260,7 +267,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
     }
   }
   private _handleReaction(msg: Eris.Message, emoji: Eris.Emoji, reactor: Eris.Member): void {
-    if (msg.channel.id === this._channelId && reactor.id === this._authorId) {
+    if (msg.channel.id === this._channelId && reactor.id === this._authorId && msg.id === this._currentQuestionMessageId) {
       const item = this._queue[0]
       if ("reactions" in item) {
         const reactionNames: string[] = []
@@ -328,7 +335,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if ("reactions" in item) {
         this.send(item.content)
           .then((m) => {
-            this._msgDelete.push(m.id)
+            this._msgDelete.push(m)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
               m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
@@ -338,7 +345,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       } else {
         this.send(item.content)
           .then((m) => {
-            this._msgDelete.push(m.id)
+            this._msgDelete.push(m)
             this._currentQuestionMessageId = m.id
           })
       }
@@ -351,7 +358,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       if ("reactions" in item) {
         this.send(item.content)
           .then((m) => {
-            this._msgDelete.push(m.id)
+            this._msgDelete.push(m)
             this._currentQuestionMessageId = m.id
             for (const emoji of item.reactions) {
               m.addReaction(typeof emoji === 'string' ? emoji : `${ emoji.animated ? "a" : "" }:${emoji.name}:${emoji.id}`)
@@ -361,7 +368,7 @@ class Menu<R extends (Eris.Message | Eris.Emoji | undefined)[]> extends EventEmi
       } else {
         this.send(item.content)
           .then((m) => {
-            this._msgDelete.push(m.id)
+            this._msgDelete.push(m)
             this._currentQuestionMessageId = m.id
           })
       }
