@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { BaseCommand } from '../..'
 import { CommandProps } from '../../../@types'
@@ -60,11 +61,56 @@ class YuaCommand extends BaseCommand {
     }
 
     if (!args[0]) {
-      const addEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620730044457'), // Add
-        removeEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620440506399'), // Remove
-        uniqueEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846180587093360652'), // Unique
-        bindingEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846182159483928617'), // Binding
-        limitedEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846184576694616074') // Limited
+      const addEmoji: Eris.Emoji = {
+        animated: false,
+        name: "RRadd",
+        id: "846179620730044457",
+        require_colons: false,
+        managed: false,
+        roles: [],
+        user: null,
+      }
+      const removeEmoji: Eris.Emoji = {
+        animated: false,
+        name: "RRremove",
+        id: "846179620440506399",
+        require_colons: false,
+        managed: false,
+        roles: [],
+        user: null,
+      }
+      const uniqueEmoji: Eris.Emoji = {
+        animated: false,
+        name: "RRUnique",
+        id: "846180587093360652",
+        require_colons: false,
+        managed: false,
+        roles: [],
+        user: null,
+      }
+      const bindingEmoji: Eris.Emoji = {
+        animated: false,
+        name: "RRBinding",
+        id: "846182159483928617",
+        require_colons: false,
+        managed: false,
+        roles: [],
+        user: null,
+      }
+      const limitedEmoji: Eris.Emoji = {
+        animated: false,
+        name: "RRLimited",
+        id: "846184576694616074",
+        require_colons: false,
+        managed: false,
+        roles: [],
+        user: null,
+      }
+      // const addEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620730044457'), // Add
+      //   removeEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846179620440506399'), // Remove
+      //   uniqueEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846180587093360652'), // Unique
+      //   bindingEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846182159483928617'), // Binding
+      //   limitedEmoji = this.yua.client.guilds.get('809588974821179404').emojis.find(e => e.id === '846184576694616074') // Limited
 
       const emojiToType = new Map<string,"add"|"remove"|"unique"|"binding"|"limited">([
         ['846179620730044457', 'add'],
