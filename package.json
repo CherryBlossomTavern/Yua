@@ -1,6 +1,6 @@
 {
   "name": "yua",
-  "version": "1.0.5",
+  "version": "1.2.0",
   "description": "Yua bot OWO",
   "main": "dist/index.js",
   "engines": {
