@@ -39,7 +39,7 @@
   "dependencies": {
     "axios": "^0.21.1",
     "chalk": "^4.1.0",
-    "eris": "^0.14.1",
+    "eris": "^0.15.1",
     "moment": "^2.29.1",
     "mongoose": "^5.12.4",
     "request": "^2.88.2",
