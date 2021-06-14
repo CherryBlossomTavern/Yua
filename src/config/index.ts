@@ -35,6 +35,11 @@ export const categoryHelp: { [category: string]: { text: string, emoji: string, 
     text: "Let users react on a menu and recieve roles with ease",
     emoji: ":point_up_2:",
   },
+  automation: {
+    name: "Automation",
+    text: "Automate things in your server to make life 10 times easier",
+    emoji: ":robot:",
+  },
 }
 
 export const defaultDevs: string[] = [
