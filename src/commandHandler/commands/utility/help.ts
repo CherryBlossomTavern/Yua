@@ -107,7 +107,7 @@ class YuaCommand extends BaseCommand {
           const description = this.yua.langHandler.tempGetValue(command.extra.description) || command.extra.description
 
           
-          commandsDes += `\n\n**${commandNameUppercase}**\n*${description}*${command.extra.aliases[0] ? `\n**Aliases:** \`${command.extra.aliases.join("`, `")}\`` : "" }\n**Usage:** \`${prefixes[0]} ${command.name}${command.extra.usage ? ` ${command.extra.usage}` : ""}\``
+          commandsDes += `\n\n**${commandNameUppercase}**${description ? `\n*${description}*` : ""}${command.extra.aliases[0] ? `\n**Aliases:** \`${command.extra.aliases.join("`, `")}\`` : "" }\n**Usage:** \`${prefixes[0]} ${command.name}${command.extra.usage ? ` ${command.extra.usage}` : ""}\``
         }
   
         const catEmbed: EmbedOptions = {
@@ -137,7 +137,7 @@ class YuaCommand extends BaseCommand {
         const command = this.yua.commandHandler.getByAlias(args[0].toLowerCase())
         if (command) {
           if (command.extra.category === 'developer' && !this.yua.config.devs.includes(message.author.id)) {
-            quickEmbed(null, `I could not find the command, category, or alias **"${args[0]}"**`, colors.error)
+            quickEmbed(undefined, `I could not find the command, category, or alias **"${args[0]}"**`, colors.error)
 
             return
           }
@@ -208,7 +208,7 @@ class YuaCommand extends BaseCommand {
 
           return
         } else {
-          quickEmbed(null, `I could not find the command, category, or alias **"${args[0]}"**`, colors.error)
+          quickEmbed(undefined, `I could not find the command, category, or alias **"${args[0]}"**`, colors.error)
 
           return
         }

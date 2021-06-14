@@ -297,7 +297,7 @@ class CommandHandler {
 
         return
       } catch (err) {
-        quickEmbed(null, `**Sorry!** I could not find "${args[0]}" :c`, colors.error)
+        quickEmbed(undefined, `**Sorry!** I could not find "${args[0]}" :c`, colors.error)
 
         return
       }
@@ -357,7 +357,7 @@ class CommandHandler {
         })
     }
     const somethingWrong = (): void => {
-      quickEmbed(null, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
+      quickEmbed(undefined, "Uh oh :c, it appears there is something wrong with this roleplay command!", colors.error)
     }
     const getUser = async (): Promise<Member> => {
       try {
@@ -458,9 +458,9 @@ class CommandHandler {
      * 
      * Errors are caught and only thrown if NODE_ENV=development
      */
-    const send = (content: string | { embed: EmbedOptions }): Promise<Message> => {
+    const send = (content: string | { embed: EmbedOptions }, files?: Eris.MessageFile | Eris.MessageFile[]): Promise<Message> => {
       try {
-        const message = channel.createMessage(content)
+        const message = channel.createMessage(content, files)
         message.catch((err) => {
           if (process.env.NODE_ENV === 'development') {
             this.yua.console.error("Caught Error: CommandProps.send: This error will only show in NODE_ENV=development.\n", err)
@@ -587,7 +587,7 @@ class CommandHandler {
       if (!yuasPerms.hasPerms) {
         if (yuasPerms.missingPerm !== 'viewChannel' && yuasPerms.missingPerm !== 'sendMessages' && yuasPerms.missingPerm !== 'readMessages') {
           //if (checkIfHasPerms(guildChannel, yuaMember, ['embedLinks'])) {
-          quickEmbed(null, `Sorry, it seems I don't have **${yuasPerms.missingPerm}** permission, I cannot do that!`, colors.error)
+          quickEmbed(undefined, `Sorry, it seems I don't have **${yuasPerms.missingPerm}** permission, I cannot do that!`, colors.error)
 
           return
         }
@@ -596,7 +596,7 @@ class CommandHandler {
 
     //console.log(this.yua.config)
     if (command.extra.devOnly && !this.yua.config.devs.includes(message.author.id)) {
-      quickEmbed(null, "Apologies, but only my maintainers can utilize this!", colors.error)
+      quickEmbed(undefined, "Apologies, but only my maintainers can utilize this!", colors.error)
 
       return
     }
@@ -604,7 +604,7 @@ class CommandHandler {
     if (command.extra.userPermissions) {
       const userPerms = checkIfHasPerms(guildChannel, message.member, command.extra.userPermissions)
       if (!userPerms.hasPerms) {
-        quickEmbed(null, `Sorry, it seems you don't have **${userPerms.missingPerm}** permission, I cannot let you do that!`, colors.error)
+        quickEmbed(undefined, `Sorry, it seems you don't have **${userPerms.missingPerm}** permission, I cannot let you do that!`, colors.error)
 
         return
       }

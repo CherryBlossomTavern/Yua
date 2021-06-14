@@ -5,6 +5,8 @@ import {
   messageReactionRemove,
   messageReactionRemoveAll,
   messageReactionRemoveEmoji,
+  messageDelete,
+  messageDeleteBulk,
 } from './events'
 import {
   yuaStatus,
@@ -24,4 +26,6 @@ const eventListeners = (yua: import('./client')): void => {
   yua.client.on('messageReactionRemove', messageReactionRemove(yua))
   yua.client.on('messageReactionRemoveAll', messageReactionRemoveAll(yua))
   yua.client.on('messageReactionRemoveEmoji', messageReactionRemoveEmoji(yua))
+  yua.client.on('messageDelete', messageDelete(yua))
+  yua.client.on('messageDeleteBulk', messageDeleteBulk(yua))
 }

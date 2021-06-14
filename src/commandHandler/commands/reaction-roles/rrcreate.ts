@@ -15,7 +15,10 @@ class YuaCommand extends BaseCommand {
       usage: "[type]",
       description: "Create a new reaction role menu with my step by step setup!\nUse https://embedbuilder.yua.gg/ to create your embed!",
       category: "reaction-roles",
-      aliases: [],
+      aliases: [
+        'rrc',
+        'reactionrolecreate',
+      ],
       userPermissions: [
         'manageRoles',
       ],
@@ -722,6 +725,8 @@ class YuaCommand extends BaseCommand {
         }
       }
     }
+
+    if (roles.size > 20) return "Woah there, your menu is too powerful. Discord only allows a max of 20 reactions on a message!"
 
     return true
   }

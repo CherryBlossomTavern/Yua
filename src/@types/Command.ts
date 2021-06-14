@@ -70,7 +70,7 @@ export interface CommandProps {
    * 
    * Errors are caught and only thrown if NODE_ENV=development
    */
-  send(content: string | { embed: Eris.EmbedOptions }): Promise<Eris.Message>
+  send(content: string | { embed: Eris.EmbedOptions }, files?: Eris.MessageFile | Eris.MessageFile[]): Promise<Eris.Message>
   /**
    * Helper function to create embed message
    * 

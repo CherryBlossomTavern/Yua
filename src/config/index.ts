@@ -50,3 +50,40 @@ export const boostMessageTypes: number[] = [
   10,
   11,
 ]
+
+export const enum BoostMessageReplaceKeys {
+  User = "{USER}",
+  DisplayName = "{DISPLAYNAME}",
+  Avatar = "{AVATAR}",
+  ServerIcon = "{SERVERICON}",
+  ServerBanner = "{SERVERBANNER}",
+  Boosts = "{BOOST}",
+  BoostsNeeded = "{BOOSTNEEDED}",
+  Boost4Tier = "{BOOST4TIER}",
+  Tier = "{TIER}",
+  NextTier = "{NEXTTIER}",
+  TierSuffix = "{TIERSUFFIX}",
+  NextTierSuffix = "{NEXTTIERSUFFIX}"
+}
+
+export const BoostNeeded = {
+  0: 2,
+  1: 15,
+  2: 30,
+  3: 0,
+}
+
+export const NextTier = {
+  0: 1,
+  1: 2,
+  2: 3,
+  3: "Max",
+}
+
+export const TierSuffix = {
+  0: "",
+  1: "st",
+  2: "nd",
+  3: "rd",
+  "Max": "",
+}

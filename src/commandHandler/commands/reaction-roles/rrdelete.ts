@@ -11,7 +11,10 @@ class YuaCommand extends BaseCommand {
       usage: "<message-id>",
       description: "Delete a reaction role menu",
       category: "reaction-roles",
-      aliases: [],
+      aliases: [
+        'rrd',
+        'reactionroledelete',
+      ],
       userPermissions: [
         'manageRoles',
       ],
