@@ -17,7 +17,7 @@ import Yua from 'src/client'
 export default (yua: Yua) => (msg: Message): void => {
   yua.commandHandler.parseCommand(msg)
 
-  //console.log(msg)
+  // Boost Message
   if (boostMessageTypes.includes(msg.type)) {
     BoostMessage.findOne({ guildId: msg.guildID })
       .then(res => {

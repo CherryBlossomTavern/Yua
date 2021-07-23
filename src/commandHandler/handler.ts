@@ -219,10 +219,9 @@ class CommandHandler {
     }
     const towards = async (): Promise<void> => {
       try {
-        if (!args[0]) return want()
+        if (!args[0] && !message.messageReference) return want()
         const user = await getUser()
         if (!user) throw "No User"
-        args.shift()
 
         if (message.member.id === user.id) {
           if (type === 'both') {
@@ -233,11 +232,13 @@ class CommandHandler {
 
           return want()
         }
+        if (!message.messageReference) args.shift()
 
         const gif = cmd.json.links[Math.floor(Math.random() * cmd.json.links.length)]
         //console.log(gif)
         const response = yua.langHandler.tempGetValue(cmd.json['responses.towards'])
         const counter = yua.langHandler.tempGetValue(cmd.json['counters.towards'])
+        // console.log(response, counter)
         if (!response || !counter) return somethingWrong()
 
         let sender = await RoleplayCounter.findOne({ userId: message.author.id })
@@ -361,9 +362,17 @@ class CommandHandler {
     }
     const getUser = async (): Promise<Member> => {
       try {
-        if (!args[0]) return null
+        if (!args[0] && !message.messageReference) return null
         const guild = yua.client.guilds.get(props.message.guildID)
         let user: Eris.Member
+        if (message.messageReference) {
+          const refMes = await yua.client.getMessage(message.messageReference.channelID, message.messageReference.messageID)
+          if (refMes) {
+            user = refMes.member
+
+            return user
+          }
+        }
         if (message.mentions[0]) {
           user = guild.members.get(message.mentions[0].id)
         } else {
@@ -383,10 +392,10 @@ class CommandHandler {
         if (!user) {
           return null
         } else {
-
           return user
         }
       } catch (err) {
+        // console.log(err)
 
         return null
       }

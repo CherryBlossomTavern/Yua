@@ -6,7 +6,9 @@ import Yua from 'src/client'
 import { Menu } from '../../../classes'
 import Eris from 'eris'
 import { ReactionRole } from '../../../database/models'
-import { colors } from '../../../config'
+import {
+  colors, CountryFlags, 
+} from '../../../config'
 import { getEmbedJson } from '../../../utils'
 class YuaCommand extends BaseCommand {
   private yua: Yua
@@ -695,11 +697,8 @@ class YuaCommand extends BaseCommand {
     const roles = new Map<string, string>() // Emoji, RoleId
 
     for (const [emoji, role] of args) {
-      // console.log(emoji)
-      // console.log(uniEmojiRegex.test(emoji))
-      // console.log(discordEmojiRegex.test(emoji))
       if (roles.size < 1) {
-        if (!uniEmojiRegex.test(emoji) && !discordEmojiRegex.test(emoji)) return "Incorrectly formatted! Please follow this format: ```👍 @thumbsUpRole 👎 @thumbsDownRole ...```"
+        if (!uniEmojiRegex.test(emoji) && !discordEmojiRegex.test(emoji) && !CountryFlags.includes(emoji)) return "Incorrectly formatted! Please follow this format: ```👍 @thumbsUpRole 👎 @thumbsDownRole ...```"
         else {
           if (!emoji) return "Incorrectly formatted! Please follow this format: ```👍 @thumbsUpRole 👎 @thumbsDownRole ...```"
           if (!role) return `Incorrectly formatted at \`\`\`${emoji} \`\`\`\nMissing role, please follow the format: \`\`\`👍 @thumbsUpRole 👎 @thumbsDownRole ...\`\`\``
@@ -708,7 +707,7 @@ class YuaCommand extends BaseCommand {
             const roleId = role.replace("<@&", "").replace(">", "")
             const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
             if (!Array.from(guild.roles.keys()).includes(roleId)) return `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n \`${role}\` is not a valid role`
-            if (!uniEmojiRegex.test(emoji) && !guild.emojis.map(e => e.id).includes(emojiId)) return  `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n The emoji \`${emoji}\` does not belong to this guild`
+            if (!uniEmojiRegex.test(emoji) && !guild.emojis.map(e => e.id).includes(emojiId) && !CountryFlags.includes(emoji)) return  `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n The emoji \`${emoji}\` does not belong to this guild`
             roles.set(emoji, roleId)
           }
         }
@@ -720,7 +719,7 @@ class YuaCommand extends BaseCommand {
           const roleId = role.replace("<@&", "").replace(">", "")
           const emojiId = emoji.replace(/<(a|):.*:/, "").replace(">", "")
           if (!Array.from(guild.roles.keys()).includes(roleId)) return `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n \`${role}\` is not a valid role`
-          if (!uniEmojiRegex.test(emoji) && !guild.emojis.map(e => e.id).includes(emojiId)) return  `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n The emoji \`${emoji}\` does not belong to this guild`
+          if (!uniEmojiRegex.test(emoji) && !guild.emojis.map(e => e.id).includes(emojiId) && !CountryFlags.includes(emoji)) return  `Incorrectly formatted at \`\`\`${emoji} ${role}\`\`\`\n The emoji \`${emoji}\` does not belong to this guild`
           roles.set(emoji, roleId)
         }
       }

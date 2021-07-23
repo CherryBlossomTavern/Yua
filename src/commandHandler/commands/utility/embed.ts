@@ -16,7 +16,9 @@ class YuaCommand extends BaseCommand {
       usage: "<JSON>",
       description: "Send an embedded message. Use https://embedbuilder.yua.gg/ to make your message!",
       category: "utility",
-      aliases: [],
+      aliases: [
+        'emb',
+      ],
       userPermissions: [
         "manageMessages",
       ],
