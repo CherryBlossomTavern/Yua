@@ -94,6 +94,7 @@ export const TierSuffix = {
 }
 
 export const CountryFlags = [
+  "🇿🇦"
   "🇪🇺",
   "🇦🇫",
   "🇦🇽",
