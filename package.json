@@ -41,7 +41,7 @@
     "chalk": "^4.1.0",
     "eris": "^0.14.1",
     "moment": "^2.29.1",
-    "mongoose": "^5.12.4",
+    "mongoose": "^5.13.6",
     "request": "^2.88.2",
     "yuasharder": "^1.0.9"
   },
