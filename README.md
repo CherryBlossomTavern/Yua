@@ -1,5 +1,7 @@
 # Yua
 
+### Project Has Been Discontinued. The code base is a horrible mess and discord only supports "slash" commands as of a nearing date.
+
 Official repository for our cutie, savior, and deity Yua.
 
 *You must do your daily prayers worshipping Yua my brothers or else....*
